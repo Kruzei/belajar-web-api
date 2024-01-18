@@ -1,21 +1,23 @@
 package book
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 type Books struct {
-	ID          int			
-	Title       string
-	Description string
-	Price       int
-	Rating      int
-	CreatedAt   time.Time
-	UpdatedAt	time.Time
+	ID          int       `json:"id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Price       int       `json:"price"`
+	Rating      int       `json:"rating"`
+	CreatedAt   time.Time `json:"-"`
+	UpdatedAt   time.Time `json:"-"`
 }
 
-type BookResponse struct {
-	ID          int    `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Price       int    `json:"price"`
-	Rating      int    `json:"rating"`
+type BookRequest struct {
+	Title       string      `json:"title" binding:"required"`
+	Price       json.Number `json:"price" binding:"required,number"`
+	Rating      json.Number `json:"rating" binding:"required,number"`
+	Description string      `json:"description" binding:"required"`
 }

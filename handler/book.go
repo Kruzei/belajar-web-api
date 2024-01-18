@@ -18,16 +18,6 @@ func NewBookHandler(bookService book.Service) *BookHandler {
 	return &BookHandler{bookService}
 }
 
-func convertResponse(b book.Books) book.BookResponse{
-	return book.BookResponse{
-		Title:       b.Title,
-		Price:       b.Price,
-		Description: b.Description,
-		Rating:      b.Rating,
-		ID:          b.ID,
-	}
-}
-
 func (h *BookHandler) GetBooks(c *gin.Context) {
 	books, err := h.bookService.FindAll()
 	if err != nil {
@@ -37,16 +27,8 @@ func (h *BookHandler) GetBooks(c *gin.Context) {
 		return
 	}
 
-	var booksResponse []book.BookResponse
-
-	for _, b := range books {
-		bookResponse := convertResponse(b)
-
-		booksResponse = append(booksResponse, bookResponse)
-	}
-
 	c.JSON(http.StatusOK, gin.H{
-		"data": booksResponse,
+		"data": books,
 	})
 }
 
@@ -62,10 +44,8 @@ func (h *BookHandler) GetBook(c *gin.Context) {
 		return
 	}
 
-	bookResponse := convertResponse(b)
-
 	c.JSON(http.StatusOK, gin.H{
-		"data": bookResponse,
+		"data": b,
 	})
 }
 
@@ -131,10 +111,9 @@ func (h *BookHandler) UpdateBook(c *gin.Context){
 		return
 	}
 
-	bookResponse := convertResponse(book)
 
 	c.JSON(http.StatusOK, gin.H{
-		"data": bookResponse,
+		"data": book,
 	})
 }
 
@@ -150,9 +129,7 @@ func (h *BookHandler) DeleteBook(c *gin.Context){
 		})
 	}
 
-	bookResponse := convertResponse(b)
-
 	c.JSON(http.StatusOK, gin.H{
-		"data": bookResponse,
+		"data": b,
 	})
 }
