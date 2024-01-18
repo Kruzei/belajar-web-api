@@ -1,8 +1,10 @@
 package main
 
 import (
-	"belajar-api/book"
-	"belajar-api/handler"
+	"belajar-api/app/book/handler"
+	"belajar-api/app/book/repository"
+	"belajar-api/app/book/usecase"
+	"belajar-api/domain"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -19,12 +21,12 @@ func main() {
 		log.Fatal("Db Connection Error")
 	}
 
-	db.AutoMigrate(book.Books{})
+	db.AutoMigrate(domain.Books{})
 
-	bookRepository := book.NewRepository(db)
-	bookService := book.NewService(bookRepository)
-	bookHandler := handler.NewBookHandler(bookService)
-	
+	bookRepository := repository.NewRepository(db)
+	bookUsecase := usecase.NewBookUsecase(bookRepository)
+	bookHandler := handler.NewBookHandler(bookUsecase)
+
 	router := gin.Default()
 
 	v1 := router.Group("/v1")

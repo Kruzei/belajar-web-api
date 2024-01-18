@@ -1,7 +1,8 @@
 package handler
 
 import (
-	"belajar-api/book"
+	"belajar-api/app/book/usecase"
+	"belajar-api/domain"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -11,15 +12,15 @@ import (
 )
 
 type BookHandler struct {
-	bookService book.Service
+	bookUsecase usecase.IBookUsecase
 }
 
-func NewBookHandler(bookService book.Service) *BookHandler {
-	return &BookHandler{bookService}
+func NewBookHandler(bookUsecase usecase.IBookUsecase) *BookHandler {
+	return &BookHandler{bookUsecase}
 }
 
 func (h *BookHandler) GetBooks(c *gin.Context) {
-	books, err := h.bookService.FindAll()
+	books, err := h.bookUsecase.FindAllBooks()
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"errors": err,
@@ -36,7 +37,7 @@ func (h *BookHandler) GetBook(c *gin.Context) {
 	idString := c.Param("id")
 	id, _ := strconv.Atoi(idString)
 
-	b, err := h.bookService.FindById(id)
+	b, err := h.bookUsecase.FindBookById(id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"errors": err,
@@ -51,7 +52,7 @@ func (h *BookHandler) GetBook(c *gin.Context) {
 
 func (h *BookHandler) PostBookHandler(c *gin.Context) {
 	//Mencoba menerima ada id dan title
-	var bookRequest book.BookRequest
+	var bookRequest domain.BookRequest
 
 	err := c.ShouldBindJSON(&bookRequest)
 
@@ -70,7 +71,7 @@ func (h *BookHandler) PostBookHandler(c *gin.Context) {
 		return
 	}
 
-	book, err := h.bookService.CreateBook(bookRequest)
+	book, err := h.bookUsecase.CreateBook(bookRequest)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err,
@@ -83,14 +84,14 @@ func (h *BookHandler) PostBookHandler(c *gin.Context) {
 	})
 }
 
-func (h *BookHandler) UpdateBook(c *gin.Context){
-	var bookRequest book.BookRequest
+func (h *BookHandler) UpdateBook(c *gin.Context) {
+	var bookRequest domain.BookRequest
 
 	err := c.ShouldBindJSON(&bookRequest)
-	if err != nil{
+	if err != nil {
 		errorMessages := []string{}
 
-		for _, e := range err.(validator.ValidationErrors){
+		for _, e := range err.(validator.ValidationErrors) {
 			errorMessage := fmt.Sprintf("Error on field %s, condition : %s", e.Field(), e.ActualTag())
 			errorMessages = append(errorMessages, errorMessage)
 		}
@@ -102,28 +103,27 @@ func (h *BookHandler) UpdateBook(c *gin.Context){
 
 	idString := c.Param("id")
 	id, _ := strconv.Atoi(idString)
-	book, err := h.bookService.Update(id, bookRequest)
+	book, err := h.bookUsecase.Update(id, bookRequest)
 
-	if err != nil{
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err,
 		})
 		return
 	}
 
-
 	c.JSON(http.StatusOK, gin.H{
 		"data": book,
 	})
 }
 
-func (h *BookHandler) DeleteBook(c *gin.Context){
+func (h *BookHandler) DeleteBook(c *gin.Context) {
 	idString := c.Param("id")
 	id, _ := strconv.Atoi(idString)
 
-	b, err := h.bookService.Delete(id)
+	b, err := h.bookUsecase.Delete(id)
 
-	if err != nil{
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"errors": err,
 		})

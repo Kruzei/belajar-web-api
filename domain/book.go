@@ -1,4 +1,4 @@
-package book
+package domain
 
 import (
 	"encoding/json"
