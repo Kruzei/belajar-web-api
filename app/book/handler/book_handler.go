@@ -1,14 +1,13 @@
 package handler
 
 import (
+	help "belajar-api/Help"
 	"belajar-api/app/book/usecase"
 	"belajar-api/domain"
-	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 )
 
 type BookHandler struct {
@@ -22,15 +21,11 @@ func NewBookHandler(bookUsecase usecase.IBookUsecase) *BookHandler {
 func (h *BookHandler) GetBooks(c *gin.Context) {
 	books, err := h.bookUsecase.FindAllBooks()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"errors": err,
-		})
+		help.FailedResponse(c, http.StatusBadRequest, "Failed get all books", err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"data": books,
-	})
+	help.SuccessResponse(c, http.StatusOK, "Succes get all books", books)
 }
 
 func (h *BookHandler) GetBook(c *gin.Context) {
@@ -39,15 +34,11 @@ func (h *BookHandler) GetBook(c *gin.Context) {
 
 	b, err := h.bookUsecase.FindBookById(id)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"errors": err,
-		})
+		help.FailedResponse(c, http.StatusBadRequest, "Failed get book by id", err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"data": b,
-	})
+	help.SuccessResponse(c, http.StatusOK, "Succes get book by id", b)
 }
 
 func (h *BookHandler) PostBookHandler(c *gin.Context) {
@@ -58,30 +49,17 @@ func (h *BookHandler) PostBookHandler(c *gin.Context) {
 
 	if err != nil {
 		//Cara menampilkan error
-		var errorMessages []string
-
-		for _, e := range err.(validator.ValidationErrors) {
-			errorMessage := fmt.Sprintf("Error on field %s, condition : %s", e.Field(), e.ActualTag())
-			errorMessages = append(errorMessages, errorMessage) //Custom Error)
-		}
-
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": errorMessages,
-		})
+		help.FailedResponse(c, http.StatusBadRequest, "Failed bind book", err)
 		return
 	}
 
 	book, err := h.bookUsecase.CreateBook(bookRequest)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err,
-		})
+		help.FailedResponse(c, http.StatusBadRequest, "Failed to create", err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"data": book,
-	})
+	help.SuccessResponse(c, http.StatusOK, "Succes create book", book)
 }
 
 func (h *BookHandler) UpdateBook(c *gin.Context) {
@@ -89,16 +67,8 @@ func (h *BookHandler) UpdateBook(c *gin.Context) {
 
 	err := c.ShouldBindJSON(&bookRequest)
 	if err != nil {
-		errorMessages := []string{}
-
-		for _, e := range err.(validator.ValidationErrors) {
-			errorMessage := fmt.Sprintf("Error on field %s, condition : %s", e.Field(), e.ActualTag())
-			errorMessages = append(errorMessages, errorMessage)
-		}
-
-		c.JSON(http.StatusBadRequest, gin.H{
-			"errors": errorMessages,
-		})
+		help.FailedResponse(c, http.StatusBadRequest, "Failed bind book", err)
+		return
 	}
 
 	idString := c.Param("id")
@@ -106,15 +76,11 @@ func (h *BookHandler) UpdateBook(c *gin.Context) {
 	book, err := h.bookUsecase.Update(id, bookRequest)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err,
-		})
+		help.FailedResponse(c, http.StatusBadRequest, "Failed Update Book", err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"data": book,
-	})
+	help.SuccessResponse(c, http.StatusOK, "Succes update book", book)
 }
 
 func (h *BookHandler) DeleteBook(c *gin.Context) {
@@ -124,12 +90,9 @@ func (h *BookHandler) DeleteBook(c *gin.Context) {
 	b, err := h.bookUsecase.Delete(id)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"errors": err,
-		})
+		help.FailedResponse(c, http.StatusBadRequest, "Failed delete book", err)
+		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"data": b,
-	})
+	help.SuccessResponse(c, http.StatusOK, "Succes delete book", b)
 }
