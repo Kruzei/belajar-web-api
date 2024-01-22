@@ -1,6 +1,9 @@
 package domain
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 type Users struct {
 	Name      string    `json:"name" gorm:"primary key"`
@@ -12,8 +15,8 @@ type Users struct {
 }
 
 type UsersRequests struct {
-	Name     string `json:"name"`
-	Password string `json:"password"`
-	Age      int    `json:"age"`
-	Gender   string `json:"gender"`
+	Name     string      `json:"name"`
+	Password string      `json:"password"`
+	Age      json.Number `json:"age"`
+	Gender   string      `json:"gender"`
 }
