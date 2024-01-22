@@ -94,5 +94,5 @@ func (h *BookHandler) DeleteBook(c *gin.Context) {
 		return
 	}
 
-	help.SuccessResponse(c, http.StatusOK, "Succes delete book", b)
+	help.SuccessResponse(c, http.StatusOK, "Succes get all book", b)
 }

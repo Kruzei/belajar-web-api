@@ -4,26 +4,19 @@ import (
 	"belajar-api/app/book/handler"
 	"belajar-api/app/book/repository"
 	"belajar-api/app/book/usecase"
-	"belajar-api/domain"
-	"log"
+	"belajar-api/infrastructure"
+	"belajar-api/infrastructure/database"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 )
 
 func main() {
 	//Connect ke database
-	dsn := "root:Himesama@tcp(127.0.0.1:3306)/belajar_web_api?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	infrastructure.LoadEnv()
 
-	if err != nil {
-		log.Fatal("Db Connection Error")
-	}
+	database.ConnectDB()
 
-	db.AutoMigrate(domain.Books{})
-
-	bookRepository := repository.NewRepository(db)
+	bookRepository := repository.NewRepository(database.DB)
 	bookUsecase := usecase.NewBookUsecase(bookRepository)
 	bookHandler := handler.NewBookHandler(bookUsecase)
 

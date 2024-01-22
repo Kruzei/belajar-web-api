@@ -4,7 +4,10 @@ go 1.21.5
 
 require github.com/go-playground/validator v9.31.0+incompatible
 
-require github.com/go-sql-driver/mysql v1.7.0 // indirect
+require (
+	github.com/go-sql-driver/mysql v1.7.0 // indirect
+	github.com/joho/godotenv v1.5.1 // indirect
+)
 
 require (
 	github.com/bytedance/sonic v1.10.2 // indirect
