@@ -5,6 +5,7 @@ import (
 	"belajar-api/domain"
 	"belajar-api/helper"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -28,8 +29,9 @@ func (h *UserHandler) FindAllUsers(c *gin.Context) {
 }
 
 func (h *UserHandler) FindUser(c *gin.Context){
-	nameString := c.Param("name")
-	user, err := h.userUsecase.FindUser(nameString)
+	idString := c.Param("id")
+	id, _ := strconv.Atoi(idString)
+	user, err := h.userUsecase.FindUser(id)
 	if err != nil {
 		help.FailedResponse(c, http.StatusBadRequest, "Failed to find user", err)
 		return
@@ -65,8 +67,9 @@ func (h *UserHandler) UpdateUser(c *gin.Context){
 		return
 	}
 
-	nameString := c.Param("name")
-	user, err := h.userUsecase.UpdateUser(nameString, userRequest)
+	idString := c.Param("id")
+	id, _ := strconv.Atoi(idString)
+	user, err := h.userUsecase.UpdateUser(id, userRequest)
 
 	if err != nil {
 		help.FailedResponse(c, http.StatusBadRequest, "Failed to update user", err)
@@ -77,8 +80,9 @@ func (h *UserHandler) UpdateUser(c *gin.Context){
 }
 
 func (h *UserHandler) DeleteUser(c *gin.Context){
-	nameString := c.Param("name")
-	userDelete, err := h.userUsecase.DeleteUser(nameString)
+	idString := c.Param("id")
+	id, _ := strconv.Atoi(idString)
+	userDelete, err := h.userUsecase.DeleteUser(id)
 
 	if err != nil {
 		help.FailedResponse(c, http.StatusBadRequest, "Failed to delete user", err)

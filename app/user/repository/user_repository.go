@@ -8,7 +8,7 @@ import (
 
 type IUserRepository interface {
 	FindAllUsers() ([]domain.Users, error)
-	FindUser(name string) (domain.Users, error)
+	FindUser(id int) (domain.Users, error)
 	CreateUser(user domain.Users) (domain.Users, error)
 	UpdateUser(user domain.Users) (domain.Users, error)
 	DeleteUser(user domain.Users) (domain.Users, error)
@@ -28,9 +28,9 @@ func (r *UserRepository) FindAllUsers() ([]domain.Users, error) {
 	return users, err
 }
 
-func (r *UserRepository) FindUser(name string) (domain.Users, error) {
+func (r *UserRepository) FindUser(id int) (domain.Users, error) {
 	var user domain.Users
-	err := r.db.Where(name).Find(&user).Error
+	err := r.db.Where(id).Find(&user).Error
 	return user, err
 }
 

@@ -7,10 +7,10 @@ import (
 
 type IUserUsecase interface {
 	FindAllUsers() ([]domain.Users, error)
-	FindUser(name string) (domain.Users, error)
+	FindUser(id int) (domain.Users, error)
 	CreateUser(user domain.UsersRequests) (domain.Users, error)
-	UpdateUser(name string, user domain.UsersRequests) (domain.Users, error)
-	DeleteUser(name string) (domain.Users, error)
+	UpdateUser(id int, user domain.UsersRequests) (domain.Users, error)
+	DeleteUser(id int) (domain.Users, error)
 }
 
 type UserUsecase struct{
@@ -25,8 +25,8 @@ func (u *UserUsecase) FindAllUsers()([]domain.Users, error){
 	return u.userRepository.FindAllUsers()
 }
 
-func (u *UserUsecase) FindUser(name string)(domain.Users, error){
-	return u.userRepository.FindUser(name)
+func (u *UserUsecase) FindUser(id int)(domain.Users, error){
+	return u.userRepository.FindUser(id)
 }
 
 func (u *UserUsecase) CreateUser(userRequest domain.UsersRequests)(domain.Users, error){
@@ -43,8 +43,8 @@ func (u *UserUsecase) CreateUser(userRequest domain.UsersRequests)(domain.Users,
 	return newUser, err
 }
 
-func (u *UserUsecase) UpdateUser(name string, userRequest domain.UsersRequests)(domain.Users, error){
-	user, _ := u.userRepository.FindUser(name)
+func (u *UserUsecase) UpdateUser(id int, userRequest domain.UsersRequests)(domain.Users, error){
+	user, _ := u.userRepository.FindUser(id)
 
 	user.Password = userRequest.Password
 
@@ -52,8 +52,8 @@ func (u *UserUsecase) UpdateUser(name string, userRequest domain.UsersRequests)(
 	return updatedUser, err
 }
 
-func (u *UserUsecase) DeleteUser(name string)(domain.Users, error){
-	user, _ := u.userRepository.FindUser(name)
+func (u *UserUsecase) DeleteUser(id int)(domain.Users, error){
+	user, _ := u.userRepository.FindUser(id)
 	deletedUser, err := u.userRepository.DeleteUser(user)
 	return deletedUser, err
 }
