@@ -22,11 +22,11 @@ func (h *BookHandler) GetBooks(c *gin.Context) {
 	books, err := h.bookUsecase.FindAllBooks()
 	if err != nil {
 		err := err.(help.ErrorObject)
-		help.FailedResponse(c, http.StatusBadRequest, "Failed get all books", err.Err)
+		help.FailedResponse(c, http.StatusBadRequest, "failed get all books", err.Err)
 		return
 	}
 
-	help.SuccessResponse(c, http.StatusOK, "Succes get all books", books)
+	help.SuccessResponse(c, http.StatusOK, "succes get all books", books)
 }
 
 func (h *BookHandler) GetBook(c *gin.Context) {
@@ -36,11 +36,11 @@ func (h *BookHandler) GetBook(c *gin.Context) {
 	b, err := h.bookUsecase.FindBookById(id)
 	if err != nil {
 		err := err.(help.ErrorObject)
-		help.FailedResponse(c, http.StatusBadRequest, "Failed get book by id", err.Err)
+		help.FailedResponse(c, http.StatusBadRequest, "failed get book by id", err.Err)
 		return
 	}
 
-	help.SuccessResponse(c, http.StatusOK, "Succes get book by id", b)
+	help.SuccessResponse(c, http.StatusOK, "succes get book by id", b)
 }
 
 func (h *BookHandler) PostBookHandler(c *gin.Context) {
@@ -51,18 +51,18 @@ func (h *BookHandler) PostBookHandler(c *gin.Context) {
 
 	if err != nil {
 		//Cara menampilkan error
-		help.FailedResponse(c, http.StatusBadRequest, "Failed bind book", err)
+		help.FailedResponse(c, http.StatusBadRequest, "failed bind book", err)
 		return
 	}
 
 	book, err2 := h.bookUsecase.CreateBook(bookRequest)
 	if err2 != nil {
 		err2 := err2.(help.ErrorObject)
-		help.FailedResponse(c, http.StatusBadRequest, "Failed to create", err2.Err)
+		help.FailedResponse(c, http.StatusBadRequest, "failed to create", err2.Err)
 		return
 	}
 
-	help.SuccessResponse(c, http.StatusOK, "Succes create book", book)
+	help.SuccessResponse(c, http.StatusOK, "succes create book", book)
 }
 
 func (h *BookHandler) UpdateBook(c *gin.Context) {
@@ -70,7 +70,7 @@ func (h *BookHandler) UpdateBook(c *gin.Context) {
 
 	err := c.ShouldBindJSON(&bookRequest)
 	if err != nil {
-		help.FailedResponse(c, http.StatusBadRequest, "Failed bind book", err)
+		help.FailedResponse(c, http.StatusBadRequest, "failed bind book", err)
 		return
 	}
 
@@ -80,11 +80,11 @@ func (h *BookHandler) UpdateBook(c *gin.Context) {
 
 	if err != nil {
 		err2 := err2.(help.ErrorObject)
-		help.FailedResponse(c, http.StatusBadRequest, "Failed Update Book", err2.Err)
+		help.FailedResponse(c, http.StatusBadRequest, "failed Update Book", err2.Err)
 		return
 	}
 
-	help.SuccessResponse(c, http.StatusOK, "Succes update book", book)
+	help.SuccessResponse(c, http.StatusOK, "succes update book", book)
 }
 
 func (h *BookHandler) DeleteBook(c *gin.Context) {
@@ -95,9 +95,9 @@ func (h *BookHandler) DeleteBook(c *gin.Context) {
 
 	if err != nil {
 		err := err.(help.ErrorObject)
-		help.FailedResponse(c, http.StatusBadRequest, "Failed delete book", err.Err)
+		help.FailedResponse(c, http.StatusBadRequest, "failed delete book", err.Err)
 		return
 	}
 
-	help.SuccessResponse(c, http.StatusOK, "Succes delete book", b)
+	help.SuccessResponse(c, http.StatusOK, "succes delete book", b)
 }

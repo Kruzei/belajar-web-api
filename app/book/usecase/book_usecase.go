@@ -29,8 +29,8 @@ func (s *BookUsecase) FindAllBooks() ([]domain.Books, any) {
 	err := s.bookRepository.FindAll(&books)
 	if err != nil{
 		return books, help.ErrorObject{
-			Code: http.StatusInternalServerError,
-			Message: "Error occured when find all book",
+			Code: http.StatusNotFound,
+			Message: "error occured when find all book",
 			Err: err,
 		}
 	}
@@ -44,8 +44,8 @@ func (s *BookUsecase) FindBookById(id int) (domain.Books, any) {
 	if err != nil{
 		return domain.Books{}, help.ErrorObject{
 			Code: http.StatusNotFound,
-			Message: "ID is not exist",
-			Err: errors.New("ID NOT FOUND"),
+			Message: "id is not exist",
+			Err: errors.New("id not found"),
 		}
 	}
 
@@ -67,7 +67,7 @@ func (s *BookUsecase) CreateBook(bookRequest domain.BookRequest) (domain.Books, 
 	if err != nil{
 		return domain.Books{}, help.ErrorObject{
 			Code: http.StatusInternalServerError,
-			Message: "Failed to make book data",
+			Message: "failed to make book data",
 			Err: err,
 		}
 	}
@@ -81,8 +81,8 @@ func (s *BookUsecase) Update(id int, bookRequest domain.BookRequest) (domain.Boo
 	if err != nil{
 		return domain.Books{}, help.ErrorObject{
 			Code: http.StatusNotFound,
-			Message: "ID is not exist",
-			Err: errors.New("ID NOT FOUND"),
+			Message: "id is not exist",
+			Err: errors.New("id not found"),
 		}
 	}
 
@@ -99,7 +99,7 @@ func (s *BookUsecase) Update(id int, bookRequest domain.BookRequest) (domain.Boo
 	if err != nil{
 		return domain.Books{}, help.ErrorObject{
 			Code: http.StatusInternalServerError,
-			Message: "Failed to update book data",
+			Message: "failed to update book data",
 			Err: err,
 		}
 	}
@@ -112,12 +112,19 @@ func (s *BookUsecase) Delete(id int) (domain.Books, any) {
 	if err != nil{
 		return domain.Books{}, help.ErrorObject{
 			Code: http.StatusNotFound,
-			Message: "ID is not exist",
-			Err: errors.New("ID NOT FOUND"),
+			Message: "id is not exist",
+			Err: errors.New("id not found"),
 		}
 	}
 
 	err = s.bookRepository.Delete(&book)
+	if err != nil{
+		return domain.Books{}, help.ErrorObject{
+			Code: http.StatusInternalServerError,
+			Message: "failed to delete book",
+			Err: err,
+		}
+	}
 
 	return book, err
 }
