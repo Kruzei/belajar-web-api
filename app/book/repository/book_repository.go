@@ -7,11 +7,11 @@ import (
 )
 
 type IBookRepository interface {
-	FindAll() ([]domain.Books, error)
-	FindById(id int) (domain.Books, error)
-	CreateBook(book domain.Books) (domain.Books, error)
-	Update(book domain.Books) (domain.Books, error)
-	Delete(book domain.Books) (domain.Books, error)
+	FindAll(books *[]domain.Books) (error)
+	FindById(book *domain.Books, id int) (error)
+	CreateBook(book *domain.Books) (error)
+	Update(book *domain.Books) (error)
+	Delete(book *domain.Books) (error)
 }
 
 type BookRepository struct {
@@ -22,34 +22,52 @@ func NewRepository(db *gorm.DB) *BookRepository {
 	return &BookRepository{db}
 }
 
-func (r *BookRepository) FindAll() ([]domain.Books, error) {
-	var books []domain.Books
-	err := r.db.Find(&books).Error
-	return books, err
+func (r *BookRepository) FindAll(books *[]domain.Books) (error) {
+	err := r.db.Find(books).Error
+	return err
 }
 
-func (r *BookRepository) FindById(id int) (domain.Books, error) {
-	var book domain.Books
+func (r *BookRepository) FindById(book *domain.Books, id int) (error) {
+	err := r.db.Where("id = ?", id).First(&book).Error
 
-	err := r.db.Find(&book, id).Error
-
-	return book, err
+	return err
 }
 
-func (r *BookRepository) CreateBook(book domain.Books) (domain.Books, error) {
-	err := r.db.Create(&book).Error
+func (r *BookRepository) CreateBook(book *domain.Books) (error) {
+	tx := r.db.Begin()
 
-	return book, err
+	err := r.db.Create(book).Error
+	if err != nil{
+		tx.Rollback()
+		return err
+	}
+
+	tx.Commit()
+	return nil
 }
 
-func (r *BookRepository) Update(book domain.Books) (domain.Books, error) {
-	err := r.db.Save(&book).Error
+func (r *BookRepository) Update(book *domain.Books) (error) {
+	tx := r.db.Begin()
 
-	return book, err
+	err := r.db.Save(book).Error
+	if err != nil{
+		tx.Rollback()
+		return err
+	}
+
+	tx.Commit()
+	return nil
 }
 
-func (r *BookRepository) Delete(book domain.Books) (domain.Books, error) {
-	err := r.db.Delete(&book).Error
+func (r *BookRepository) Delete(book *domain.Books) (error) {
+	tx := r.db.Begin()
 
-	return book, err
+	err := r.db.Delete(book).Error
+	if err != nil{
+		tx.Rollback()
+		return err
+	}
+
+	tx.Commit()
+	return err
 }

@@ -21,7 +21,8 @@ func NewBookHandler(bookUsecase usecase.IBookUsecase) *BookHandler {
 func (h *BookHandler) GetBooks(c *gin.Context) {
 	books, err := h.bookUsecase.FindAllBooks()
 	if err != nil {
-		help.FailedResponse(c, http.StatusBadRequest, "Failed get all books", err)
+		err := err.(help.ErrorObject)
+		help.FailedResponse(c, http.StatusBadRequest, "Failed get all books", err.Err)
 		return
 	}
 
@@ -34,7 +35,8 @@ func (h *BookHandler) GetBook(c *gin.Context) {
 
 	b, err := h.bookUsecase.FindBookById(id)
 	if err != nil {
-		help.FailedResponse(c, http.StatusBadRequest, "Failed get book by id", err)
+		err := err.(help.ErrorObject)
+		help.FailedResponse(c, http.StatusBadRequest, "Failed get book by id", err.Err)
 		return
 	}
 
@@ -53,9 +55,10 @@ func (h *BookHandler) PostBookHandler(c *gin.Context) {
 		return
 	}
 
-	book, err := h.bookUsecase.CreateBook(bookRequest)
-	if err != nil {
-		help.FailedResponse(c, http.StatusBadRequest, "Failed to create", err)
+	book, err2 := h.bookUsecase.CreateBook(bookRequest)
+	if err2 != nil {
+		err2 := err2.(help.ErrorObject)
+		help.FailedResponse(c, http.StatusBadRequest, "Failed to create", err2.Err)
 		return
 	}
 
@@ -73,10 +76,11 @@ func (h *BookHandler) UpdateBook(c *gin.Context) {
 
 	idString := c.Param("id")
 	id, _ := strconv.Atoi(idString)
-	book, err := h.bookUsecase.Update(id, bookRequest)
+	book, err2 := h.bookUsecase.Update(id, bookRequest)
 
 	if err != nil {
-		help.FailedResponse(c, http.StatusBadRequest, "Failed Update Book", err)
+		err2 := err2.(help.ErrorObject)
+		help.FailedResponse(c, http.StatusBadRequest, "Failed Update Book", err2.Err)
 		return
 	}
 
@@ -90,9 +94,10 @@ func (h *BookHandler) DeleteBook(c *gin.Context) {
 	b, err := h.bookUsecase.Delete(id)
 
 	if err != nil {
-		help.FailedResponse(c, http.StatusBadRequest, "Failed delete book", err)
+		err := err.(help.ErrorObject)
+		help.FailedResponse(c, http.StatusBadRequest, "Failed delete book", err.Err)
 		return
 	}
 
-	help.SuccessResponse(c, http.StatusOK, "Succes get all book", b)
+	help.SuccessResponse(c, http.StatusOK, "Succes delete book", b)
 }

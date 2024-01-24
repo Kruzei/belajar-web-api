@@ -3,14 +3,17 @@ package usecase
 import (
 	"belajar-api/app/book/repository"
 	"belajar-api/domain"
+	help "belajar-api/helper"
+	"errors"
+	"net/http"
 )
 
 type IBookUsecase interface {
-	FindAllBooks() ([]domain.Books, error)
-	FindBookById(id int) (domain.Books, error)
-	CreateBook(bookRequest domain.BookRequest) (domain.Books, error)
-	Update(id int, bookRequest domain.BookRequest) (domain.Books, error)
-	Delete(id int) (domain.Books, error)
+	FindAllBooks() ([]domain.Books, any)
+	FindBookById(id int) (domain.Books, any)
+	CreateBook(bookRequest domain.BookRequest) (domain.Books, any)
+	Update(id int, bookRequest domain.BookRequest) (domain.Books, any)
+	Delete(id int) (domain.Books, any)
 }
 
 type BookUsecase struct {
@@ -21,16 +24,35 @@ func NewBookUsecase(repository repository.IBookRepository) *BookUsecase {
 	return &BookUsecase{repository}
 }
 
-func (s *BookUsecase) FindAllBooks() ([]domain.Books, error) {
-	return s.bookRepository.FindAll()
-}
-
-func (s *BookUsecase) FindBookById(id int) (domain.Books, error) {
-	books, err := s.bookRepository.FindById(id)
+func (s *BookUsecase) FindAllBooks() ([]domain.Books, any) {
+	var books []domain.Books
+	err := s.bookRepository.FindAll(&books)
+	if err != nil{
+		return books, help.ErrorObject{
+			Code: http.StatusInternalServerError,
+			Message: "Error occured when find all book",
+			Err: err,
+		}
+	}
+	
 	return books, err
 }
 
-func (s *BookUsecase) CreateBook(bookRequest domain.BookRequest) (domain.Books, error) {
+func (s *BookUsecase) FindBookById(id int) (domain.Books, any) {
+	var book domain.Books 
+	err := s.bookRepository.FindById(&book, id)
+	if err != nil{
+		return domain.Books{}, help.ErrorObject{
+			Code: http.StatusNotFound,
+			Message: "ID is not exist",
+			Err: errors.New("ID NOT FOUND"),
+		}
+	}
+
+	return book, err
+}
+
+func (s *BookUsecase) CreateBook(bookRequest domain.BookRequest) (domain.Books, any) {
 	price, _ := bookRequest.Price.Int64()
 	rating, _ := bookRequest.Rating.Int64()
 
@@ -41,13 +63,29 @@ func (s *BookUsecase) CreateBook(bookRequest domain.BookRequest) (domain.Books, 
 		Rating:      int(rating),
 	}
 
-	newBook, err := s.bookRepository.CreateBook(book)
+	err := s.bookRepository.CreateBook(&book)
+	if err != nil{
+		return domain.Books{}, help.ErrorObject{
+			Code: http.StatusInternalServerError,
+			Message: "Failed to make book data",
+			Err: err,
+		}
+	}
 
-	return newBook, err
+	return book, nil
 }
 
-func (s *BookUsecase) Update(id int, bookRequest domain.BookRequest) (domain.Books, error) {
-	book, _ := s.bookRepository.FindById(id)
+func (s *BookUsecase) Update(id int, bookRequest domain.BookRequest) (domain.Books, any) {
+	var book domain.Books
+	err := s.bookRepository.FindById(&book, id)
+	if err != nil{
+		return domain.Books{}, help.ErrorObject{
+			Code: http.StatusNotFound,
+			Message: "ID is not exist",
+			Err: errors.New("ID NOT FOUND"),
+		}
+	}
+
 
 	price, _ := bookRequest.Price.Int64()
 	rating, _ := bookRequest.Rating.Int64()
@@ -57,13 +95,29 @@ func (s *BookUsecase) Update(id int, bookRequest domain.BookRequest) (domain.Boo
 	book.Rating = int(rating)
 	book.Description = bookRequest.Description
 
-	updatedBook, err := s.bookRepository.Update(book)
-	return updatedBook, err
+	err = s.bookRepository.Update(&book)
+	if err != nil{
+		return domain.Books{}, help.ErrorObject{
+			Code: http.StatusInternalServerError,
+			Message: "Failed to update book data",
+			Err: err,
+		}
+	}
+	return book, err
 }
 
-func (s *BookUsecase) Delete(id int) (domain.Books, error) {
-	book, _ := s.bookRepository.FindById(id)
-	deletedBook, err := s.bookRepository.Delete(book)
+func (s *BookUsecase) Delete(id int) (domain.Books, any) {
+	var book domain.Books
+	err := s.bookRepository.FindById(&book, id)
+	if err != nil{
+		return domain.Books{}, help.ErrorObject{
+			Code: http.StatusNotFound,
+			Message: "ID is not exist",
+			Err: errors.New("ID NOT FOUND"),
+		}
+	}
 
-	return deletedBook, err
+	err = s.bookRepository.Delete(&book)
+
+	return book, err
 }
