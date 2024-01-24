@@ -19,9 +19,10 @@ func NewUserHandler(userUsecase usecase.IUserUsecase) *UserHandler {
 }
 
 func (h *UserHandler) FindAllUsers(c *gin.Context) {
-	users, err := h.userUsecase.FindAllUsers()
-	if err != nil {
-		help.FailedResponse(c, http.StatusBadRequest, "Failed get all users", err)
+	users, errorObject := h.userUsecase.FindAllUsers()
+	if errorObject != nil {
+		errorObject := errorObject.(help.ErrorObject)
+		help.FailedResponse(c, http.StatusBadRequest, "Failed get all users", errorObject.Err)
 		return
 	}
 
@@ -31,9 +32,10 @@ func (h *UserHandler) FindAllUsers(c *gin.Context) {
 func (h *UserHandler) FindUser(c *gin.Context){
 	idString := c.Param("id")
 	id, _ := strconv.Atoi(idString)
-	user, err := h.userUsecase.FindUser(id)
-	if err != nil {
-		help.FailedResponse(c, http.StatusBadRequest, "Failed to find user", err)
+	user, errorObject := h.userUsecase.FindUser(id)
+	if errorObject != nil {
+		errorObject := errorObject.(help.ErrorObject)
+		help.FailedResponse(c, http.StatusBadRequest, "Failed to find user", errorObject.Err)
 		return
 	}
 
@@ -45,13 +47,14 @@ func (h *UserHandler) CreateUser(c *gin.Context){
 
 	err := c.ShouldBindJSON(&userRequest)
 	if err != nil{
-		help.FailedResponse(c, http.StatusBadRequest, "Failed bind book", err)
+		help.FailedResponse(c, http.StatusBadRequest, "Failed bind user", err)
 		return
 	}
 
-	user, err := h.userUsecase.CreateUser(userRequest)
-	if err != nil {
-		help.FailedResponse(c, http.StatusBadRequest, "Failed to create user", err)
+	user, errorObject := h.userUsecase.CreateUser(userRequest)
+	if errorObject != nil {
+		errorObject := errorObject.(help.ErrorObject)
+		help.FailedResponse(c, http.StatusBadRequest, "Failed to create user", errorObject.Err)
 		return
 	}
 
@@ -69,10 +72,11 @@ func (h *UserHandler) UpdateUser(c *gin.Context){
 
 	idString := c.Param("id")
 	id, _ := strconv.Atoi(idString)
-	user, err := h.userUsecase.UpdateUser(id, userRequest)
-
-	if err != nil {
-		help.FailedResponse(c, http.StatusBadRequest, "Failed to update user", err)
+	
+	user, errorObject := h.userUsecase.UpdateUser(id, userRequest)
+	if errorObject != nil {
+		errorObject := errorObject.(help.ErrorObject)
+		help.FailedResponse(c, http.StatusBadRequest, "Failed to update user", errorObject.Err)
 		return
 	}
 
@@ -82,10 +86,11 @@ func (h *UserHandler) UpdateUser(c *gin.Context){
 func (h *UserHandler) DeleteUser(c *gin.Context){
 	idString := c.Param("id")
 	id, _ := strconv.Atoi(idString)
-	userDelete, err := h.userUsecase.DeleteUser(id)
+	userDelete, errorObject := h.userUsecase.DeleteUser(id)
 
-	if err != nil {
-		help.FailedResponse(c, http.StatusBadRequest, "Failed to delete user", err)
+	if errorObject != nil {
+		errorObject := errorObject.(help.ErrorObject)
+		help.FailedResponse(c, http.StatusBadRequest, "Failed to delete user", errorObject.Err)
 		return
 	}
 

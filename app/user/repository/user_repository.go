@@ -7,11 +7,12 @@ import (
 )
 
 type IUserRepository interface {
-	FindAllUsers() ([]domain.Users, error)
-	FindUser(id int) (domain.Users, error)
-	CreateUser(user domain.Users) (domain.Users, error)
-	UpdateUser(user domain.Users) (domain.Users, error)
-	DeleteUser(user domain.Users) (domain.Users, error)
+	FindAllUsers(users *[]domain.Users) (error)
+	FindUser(user *domain.Users, id int) (error)
+	CreateUser(user *domain.Users) (error)
+	UpdateUser(user *domain.Users) (error)
+	DeleteUser(user *domain.Users) (error)
+	FindUserByCondition(user *domain.Users, name string) (error)
 }
 
 type UserRepository struct {
@@ -22,29 +23,32 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 	return &UserRepository{db}
 }
 
-func (r *UserRepository) FindAllUsers() ([]domain.Users, error) {
-	var users []domain.Users
-	err := r.db.Find(&users).Error
-	return users, err
+func (r *UserRepository) FindAllUsers(users *[]domain.Users) (error) {
+	err := r.db.Find(users).Error
+	return err
 }
 
-func (r *UserRepository) FindUser(id int) (domain.Users, error) {
-	var user domain.Users
-	err := r.db.Where(id).Find(&user).Error
-	return user, err
+func (r *UserRepository) FindUser(user *domain.Users, id int) (error) {
+	err := r.db.Where("id = ?", id).First(user).Error
+	return err
 }
 
-func (r *UserRepository) CreateUser(user domain.Users)(domain.Users, error){
-	err := r.db.Create(&user).Error
-	return user, err
+func (r *UserRepository) CreateUser(user *domain.Users)(error){
+	err := r.db.Create(user).Error
+	return err
 }
 
-func (r *UserRepository) UpdateUser(user domain.Users)(domain.Users, error){
-	err := r.db.Save(&user).Error
-	return user, err
+func (r *UserRepository) UpdateUser(user *domain.Users)(error){
+	err := r.db.Save(user).Error
+	return err
 }
 
-func (r *UserRepository) DeleteUser(user domain.Users)(domain.Users, error){
-	err := r.db.Delete(&user).Error
-	return user, err
+func (r *UserRepository) DeleteUser(user *domain.Users)(error){
+	err := r.db.Delete(user).Error
+	return err
+}
+
+func (r *UserRepository) FindUserByCondition(user *domain.Users, name string)(error){
+	err := r.db.Where("name = ?", name).First(&user).Error
+	return err
 }

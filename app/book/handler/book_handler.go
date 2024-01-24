@@ -19,10 +19,10 @@ func NewBookHandler(bookUsecase usecase.IBookUsecase) *BookHandler {
 }
 
 func (h *BookHandler) GetBooks(c *gin.Context) {
-	books, err := h.bookUsecase.FindAllBooks()
-	if err != nil {
-		err := err.(help.ErrorObject)
-		help.FailedResponse(c, http.StatusBadRequest, "failed get all books", err.Err)
+	books, errorObject := h.bookUsecase.FindAllBooks()
+	if errorObject != nil {
+		errorObject := errorObject.(help.ErrorObject)
+		help.FailedResponse(c, http.StatusBadRequest, "failed get all books", errorObject.Err)
 		return
 	}
 
@@ -33,10 +33,10 @@ func (h *BookHandler) GetBook(c *gin.Context) {
 	idString := c.Param("id")
 	id, _ := strconv.Atoi(idString)
 
-	b, err := h.bookUsecase.FindBookById(id)
-	if err != nil {
-		err := err.(help.ErrorObject)
-		help.FailedResponse(c, http.StatusBadRequest, "failed get book by id", err.Err)
+	b, errorObject := h.bookUsecase.FindBookById(id)
+	if errorObject != nil {
+		errorObject := errorObject.(help.ErrorObject)
+		help.FailedResponse(c, http.StatusBadRequest, "failed get book by id", errorObject.Err)
 		return
 	}
 
@@ -44,21 +44,19 @@ func (h *BookHandler) GetBook(c *gin.Context) {
 }
 
 func (h *BookHandler) PostBookHandler(c *gin.Context) {
-	//Mencoba menerima ada id dan title
 	var bookRequest domain.BookRequest
 
 	err := c.ShouldBindJSON(&bookRequest)
 
 	if err != nil {
-		//Cara menampilkan error
 		help.FailedResponse(c, http.StatusBadRequest, "failed bind book", err)
 		return
 	}
 
-	book, err2 := h.bookUsecase.CreateBook(bookRequest)
-	if err2 != nil {
-		err2 := err2.(help.ErrorObject)
-		help.FailedResponse(c, http.StatusBadRequest, "failed to create", err2.Err)
+	book, errorObject := h.bookUsecase.CreateBook(bookRequest)
+	if errorObject != nil {
+		errorObject := errorObject.(help.ErrorObject)
+		help.FailedResponse(c, http.StatusBadRequest, "failed to create", errorObject.Err)
 		return
 	}
 
@@ -76,11 +74,11 @@ func (h *BookHandler) UpdateBook(c *gin.Context) {
 
 	idString := c.Param("id")
 	id, _ := strconv.Atoi(idString)
-	book, err2 := h.bookUsecase.Update(id, bookRequest)
+	book, errorObject := h.bookUsecase.Update(id, bookRequest)
 
-	if err != nil {
-		err2 := err2.(help.ErrorObject)
-		help.FailedResponse(c, http.StatusBadRequest, "failed Update Book", err2.Err)
+	if errorObject != nil {
+		errorObject := errorObject.(help.ErrorObject)
+		help.FailedResponse(c, http.StatusBadRequest, "failed Update Book", errorObject.Err)
 		return
 	}
 
@@ -91,11 +89,11 @@ func (h *BookHandler) DeleteBook(c *gin.Context) {
 	idString := c.Param("id")
 	id, _ := strconv.Atoi(idString)
 
-	b, err := h.bookUsecase.Delete(id)
+	b, errorObject := h.bookUsecase.Delete(id)
 
-	if err != nil {
-		err := err.(help.ErrorObject)
-		help.FailedResponse(c, http.StatusBadRequest, "failed delete book", err.Err)
+	if errorObject != nil {
+		errorObject := errorObject.(help.ErrorObject)
+		help.FailedResponse(c, http.StatusBadRequest, "failed delete book", errorObject.Err)
 		return
 	}
 
