@@ -152,16 +152,16 @@ func (u *UserUsecase) LoginUser(UserLogin domain.UserLogin, email string) (domai
 		return domain.Users{}, "", help.ErrorObject{
 			Code:    http.StatusNotFound,
 			Message: "invalid user or password",
-			Err:     err,
+			Err:     errors.New("invalid user or password"),
 		}
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(UserLogin.Password))
 	if err != nil {
-		return domain.Users{}, "" ,help.ErrorObject{
+		return domain.Users{}, "", help.ErrorObject{
 			Code:    http.StatusNotFound,
 			Message: "invalid user or password",
-			Err:     err,
+			Err:     errors.New("invalid user or password"),
 		}
 	}
 
@@ -172,7 +172,7 @@ func (u *UserUsecase) LoginUser(UserLogin domain.UserLogin, email string) (domai
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("SECRET_KEY")))
 	if err != nil {
-		return domain.Users{}, "" , help.ErrorObject{
+		return domain.Users{}, "", help.ErrorObject{
 			Code:    http.StatusInternalServerError,
 			Message: "Failed to make token",
 			Err:     err,

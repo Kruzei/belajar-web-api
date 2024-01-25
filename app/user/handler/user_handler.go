@@ -107,9 +107,10 @@ func (h *UserHandler) Login(c *gin.Context) {
 	}
 
 	user, stringToken, errorObject := h.userUsecase.LoginUser(userRequest, userRequest.Email)
-	if err != nil {
+	if errorObject != nil {
 		errorObject := errorObject.(help.ErrorObject)
 		help.FailedResponse(c, http.StatusBadRequest, "Failed to login", errorObject.Err)
+		return
 	}
 
 	c.SetSameSite(http.SameSiteDefaultMode)

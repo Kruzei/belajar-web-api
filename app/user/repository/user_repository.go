@@ -13,6 +13,7 @@ type IUserRepository interface {
 	UpdateUser(user *domain.Users) (error)
 	DeleteUser(user *domain.Users) (error)
 	FindUserByCondition(user *domain.Users, name string) (error)
+	FindByEmail(user *domain.Users, email string)(error)
 }
 
 type UserRepository struct {
@@ -50,5 +51,10 @@ func (r *UserRepository) DeleteUser(user *domain.Users)(error){
 
 func (r *UserRepository) FindUserByCondition(user *domain.Users, email string)(error){
 	err := r.db.Where("email = ?", email).First(&user).Error
+	return err
+}
+
+func(r *UserRepository) FindByEmail(user *domain.Users, email string)(error){
+	err := r.db.Where("email = ?", email).First(user).Error
 	return err
 }
