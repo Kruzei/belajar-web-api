@@ -7,8 +7,9 @@ import (
 
 type Users struct {
 	ID        int       `json:"id" gorm:"primary key"`
-	Name      string    `json:"name" gorm:"unique"`
+	Email     string    `json:"email" gorm:"unique"`
 	Password  string    `json:"password"`
+	Name      string    `json:"name"`
 	Age       int       `json:"age"`
 	Gender    string    `json:"gender"`
 	CreatedAt time.Time `json:"-"`
@@ -16,8 +17,9 @@ type Users struct {
 }
 
 type UsersRequests struct {
-	Name     string      `json:"name"`
+	Email    string      `json:"email"`
 	Password string      `json:"password"`
+	Name     string      `json:"name"`
 	Age      json.Number `json:"age"`
 	Gender   string      `json:"gender"`
 }

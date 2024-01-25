@@ -6,7 +6,9 @@ require github.com/go-playground/validator v9.31.0+incompatible
 
 require (
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
+	github.com/golang-jwt/jwt/v5 v5.2.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
+	golang.org/x/term v0.16.0 // indirect
 )
 
 require (

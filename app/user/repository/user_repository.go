@@ -48,7 +48,7 @@ func (r *UserRepository) DeleteUser(user *domain.Users)(error){
 	return err
 }
 
-func (r *UserRepository) FindUserByCondition(user *domain.Users, name string)(error){
-	err := r.db.Where("name = ?", name).First(&user).Error
+func (r *UserRepository) FindUserByCondition(user *domain.Users, email string)(error){
+	err := r.db.Where("email = ?", email).First(&user).Error
 	return err
 }

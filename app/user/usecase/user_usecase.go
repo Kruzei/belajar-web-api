@@ -6,6 +6,8 @@ import (
 	help "belajar-api/helper"
 	"errors"
 	"net/http"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type IUserUsecase interface {
@@ -53,8 +55,8 @@ func (u *UserUsecase) FindUser(id int) (domain.Users, any) {
 }
 
 func (u *UserUsecase) CreateUser(userRequest domain.UsersRequests) (domain.Users, any) {
-	isUserExist := u.userRepository.FindUserByCondition(&domain.Users{}, userRequest.Name)
-	if isUserExist == nil{
+	isUserExist := u.userRepository.FindUserByCondition(&domain.Users{}, userRequest.Email)
+	if isUserExist == nil {
 		return domain.Users{}, help.ErrorObject{
 			Code:    http.StatusConflict,
 			Message: "failed to create user",
@@ -63,14 +65,23 @@ func (u *UserUsecase) CreateUser(userRequest domain.UsersRequests) (domain.Users
 	}
 	age, _ := userRequest.Age.Int64()
 
+	hashPassword, err := bcrypt.GenerateFromPassword([]byte(userRequest.Password), 10)
+	if err != nil {
+		return domain.Users{}, help.ErrorObject{
+			Code:    http.StatusInternalServerError,
+			Message: "failed to hash password",
+			Err:     err,
+		}
+	}
 	user := domain.Users{
+		Email:    userRequest.Email,
 		Name:     userRequest.Name,
 		Age:      int(age),
 		Gender:   userRequest.Gender,
-		Password: userRequest.Password,
+		Password: string(hashPassword),
 	}
 
-	err := u.userRepository.CreateUser(&user)
+	err = u.userRepository.CreateUser(&user)
 	if err != nil {
 		return domain.Users{}, help.ErrorObject{
 			Code:    http.StatusInternalServerError,
@@ -92,6 +103,7 @@ func (u *UserUsecase) UpdateUser(id int, userRequest domain.UsersRequests) (doma
 		}
 	}
 
+	user.Name = userRequest.Name
 	user.Password = userRequest.Password
 
 	err = u.userRepository.UpdateUser(&user)
