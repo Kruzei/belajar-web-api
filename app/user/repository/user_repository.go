@@ -9,7 +9,7 @@ import (
 type IUserRepository interface {
 	FindAllUsers(users *[]domain.Users) (error)
 	FindUser(user *domain.Users, id int) (error)
-	CreateUser(user *domain.Users) (error)
+	SignUp(user *domain.Users) (error)
 	UpdateUser(user *domain.Users) (error)
 	DeleteUser(user *domain.Users) (error)
 	FindUserByCondition(user *domain.Users, name string) (error)
@@ -33,7 +33,7 @@ func (r *UserRepository) FindUser(user *domain.Users, id int) (error) {
 	return err
 }
 
-func (r *UserRepository) CreateUser(user *domain.Users)(error){
+func (r *UserRepository) SignUp(user *domain.Users)(error){
 	err := r.db.Create(user).Error
 	return err
 }

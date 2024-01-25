@@ -23,3 +23,8 @@ type UsersRequests struct {
 	Age      json.Number `json:"age"`
 	Gender   string      `json:"gender"`
 }
+
+type UserLogin struct {
+	Email    string      `json:"email"`
+	Password string      `json:"password"`
+}

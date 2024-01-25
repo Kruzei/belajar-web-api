@@ -17,6 +17,10 @@ func SuccessResponse(c *gin.Context, code int, message string, data interface{})
 	})
 }
 
+func SuccessLogin(c *gin.Context, code int, message string) {
+	c.JSON(code, gin.H{"message": message})
+}
+
 type ErrorObject struct {
 	Code    int
 	Message string

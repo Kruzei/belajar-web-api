@@ -3,7 +3,7 @@ package handler
 import (
 	"belajar-api/app/user/usecase"
 	"belajar-api/domain"
-	"belajar-api/helper"
+	help "belajar-api/helper"
 	"net/http"
 	"strconv"
 
@@ -29,7 +29,7 @@ func (h *UserHandler) FindAllUsers(c *gin.Context) {
 	help.SuccessResponse(c, http.StatusOK, "Success get all users", users)
 }
 
-func (h *UserHandler) FindUser(c *gin.Context){
+func (h *UserHandler) FindUser(c *gin.Context) {
 	idString := c.Param("id")
 	id, _ := strconv.Atoi(idString)
 	user, errorObject := h.userUsecase.FindUser(id)
@@ -42,16 +42,16 @@ func (h *UserHandler) FindUser(c *gin.Context){
 	help.SuccessResponse(c, http.StatusOK, "Success find user", user)
 }
 
-func (h *UserHandler) CreateUser(c *gin.Context){
+func (h *UserHandler) SignUp(c *gin.Context) {
 	var userRequest domain.UsersRequests
 
 	err := c.ShouldBindJSON(&userRequest)
-	if err != nil{
+	if err != nil {
 		help.FailedResponse(c, http.StatusBadRequest, "Failed bind user", err)
 		return
 	}
 
-	user, errorObject := h.userUsecase.CreateUser(userRequest)
+	user, errorObject := h.userUsecase.SignUp(userRequest)
 	if errorObject != nil {
 		errorObject := errorObject.(help.ErrorObject)
 		help.FailedResponse(c, http.StatusBadRequest, "Failed to create user", errorObject.Err)
@@ -61,18 +61,18 @@ func (h *UserHandler) CreateUser(c *gin.Context){
 	help.SuccessResponse(c, http.StatusOK, "Success create user", user)
 }
 
-func (h *UserHandler) UpdateUser(c *gin.Context){
+func (h *UserHandler) UpdateUser(c *gin.Context) {
 	var userRequest domain.UsersRequests
 
 	err := c.ShouldBindJSON(&userRequest)
-	if err != nil{
+	if err != nil {
 		help.FailedResponse(c, http.StatusBadRequest, "Failed bind book", err)
 		return
 	}
 
 	idString := c.Param("id")
 	id, _ := strconv.Atoi(idString)
-	
+
 	user, errorObject := h.userUsecase.UpdateUser(id, userRequest)
 	if errorObject != nil {
 		errorObject := errorObject.(help.ErrorObject)
@@ -83,7 +83,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context){
 	help.SuccessResponse(c, http.StatusOK, "Success update user", user)
 }
 
-func (h *UserHandler) DeleteUser(c *gin.Context){
+func (h *UserHandler) DeleteUser(c *gin.Context) {
 	idString := c.Param("id")
 	id, _ := strconv.Atoi(idString)
 	userDelete, errorObject := h.userUsecase.DeleteUser(id)
@@ -95,4 +95,25 @@ func (h *UserHandler) DeleteUser(c *gin.Context){
 	}
 
 	help.SuccessResponse(c, http.StatusOK, "Success delete user", userDelete)
+}
+
+func (h *UserHandler) Login(c *gin.Context) {
+	var userRequest domain.UserLogin
+
+	err := c.ShouldBindJSON(&userRequest)
+	if err != nil {
+		help.FailedResponse(c, http.StatusBadRequest, "Failed bind book", err)
+		return
+	}
+
+	user, stringToken, errorObject := h.userUsecase.LoginUser(userRequest, userRequest.Email)
+	if err != nil {
+		errorObject := errorObject.(help.ErrorObject)
+		help.FailedResponse(c, http.StatusBadRequest, "Failed to login", errorObject.Err)
+	}
+
+	c.SetSameSite(http.SameSiteDefaultMode)
+	c.SetCookie("Authorization", stringToken, 60 * 3, "", "", false, true)
+
+	help.SuccessLogin(c, http.StatusOK, "Welcome "+user.Name)
 }

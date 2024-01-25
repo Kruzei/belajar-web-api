@@ -18,7 +18,7 @@ func main() {
 	infrastructure.LoadEnv()
 
 	database.ConnectDB()
-
+	
 	bookRepository := repository.NewRepository(database.DB)
 	userRepository := user_repository.NewUserRepository(database.DB)
 
@@ -40,9 +40,10 @@ func main() {
 
 	v1.GET("/users", userHandler.FindAllUsers)
 	v1.GET("/users/:id", userHandler.FindUser)
-	v1.POST("/users", userHandler.CreateUser)
+	v1.POST("/users", userHandler.SignUp)
+	v1.POST("/login", userHandler.Login)
 	v1.PUT("/users/:id", userHandler.UpdateUser)
 	v1.DELETE("/users/:id", userHandler.DeleteUser)
 
-	router.Run() //Default portnya localhost:8080, kalau mau di custom bisa kayak gini router.Run(":8888")
+	router.Run() //Default portnya localhost:8080
 }

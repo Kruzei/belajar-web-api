@@ -6,16 +6,20 @@ import (
 	help "belajar-api/helper"
 	"errors"
 	"net/http"
+	"os"
+	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type IUserUsecase interface {
 	FindAllUsers() ([]domain.Users, any)
 	FindUser(id int) (domain.Users, any)
-	CreateUser(user domain.UsersRequests) (domain.Users, any)
+	SignUp(user domain.UsersRequests) (domain.Users, any)
 	UpdateUser(id int, user domain.UsersRequests) (domain.Users, any)
 	DeleteUser(id int) (domain.Users, any)
+	LoginUser(UserLogin domain.UserLogin, email string) (domain.Users, string, any)
 }
 
 type UserUsecase struct {
@@ -54,7 +58,7 @@ func (u *UserUsecase) FindUser(id int) (domain.Users, any) {
 	return user, err
 }
 
-func (u *UserUsecase) CreateUser(userRequest domain.UsersRequests) (domain.Users, any) {
+func (u *UserUsecase) SignUp(userRequest domain.UsersRequests) (domain.Users, any) {
 	isUserExist := u.userRepository.FindUserByCondition(&domain.Users{}, userRequest.Email)
 	if isUserExist == nil {
 		return domain.Users{}, help.ErrorObject{
@@ -81,7 +85,7 @@ func (u *UserUsecase) CreateUser(userRequest domain.UsersRequests) (domain.Users
 		Password: string(hashPassword),
 	}
 
-	err = u.userRepository.CreateUser(&user)
+	err = u.userRepository.SignUp(&user)
 	if err != nil {
 		return domain.Users{}, help.ErrorObject{
 			Code:    http.StatusInternalServerError,
@@ -139,4 +143,41 @@ func (u *UserUsecase) DeleteUser(id int) (domain.Users, any) {
 	}
 
 	return user, err
+}
+
+func (u *UserUsecase) LoginUser(UserLogin domain.UserLogin, email string) (domain.Users, string, any) {
+	var user domain.Users
+	err := u.userRepository.FindUserByCondition(&user, email)
+	if err != nil {
+		return domain.Users{}, "", help.ErrorObject{
+			Code:    http.StatusNotFound,
+			Message: "invalid user or password",
+			Err:     err,
+		}
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(UserLogin.Password))
+	if err != nil {
+		return domain.Users{}, "" ,help.ErrorObject{
+			Code:    http.StatusNotFound,
+			Message: "invalid user or password",
+			Err:     err,
+		}
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub": user.ID,
+		"exp": time.Now().Add(time.Minute * 3).Unix(),
+	})
+
+	tokenString, err := token.SignedString([]byte(os.Getenv("SECRET_KEY")))
+	if err != nil {
+		return domain.Users{}, "" , help.ErrorObject{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to make token",
+			Err:     err,
+		}
+	}
+
+	return user, tokenString, err
 }
