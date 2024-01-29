@@ -1,6 +1,10 @@
 package help
 
-import "github.com/gin-gonic/gin"
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
 
 func FailedResponse(c *gin.Context, code int, message string, err error) {
 	c.JSON(code, gin.H{
@@ -17,8 +21,11 @@ func SuccessResponse(c *gin.Context, code int, message string, data interface{})
 	})
 }
 
-func SuccessLogin(c *gin.Context, code int, message string) {
-	c.JSON(code, gin.H{"message": message})
+func UnathorizedResponse(c *gin.Context, message string, err error){
+	c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+		"message": message,
+		"err": err.Error(),
+	})
 }
 
 type ErrorObject struct {

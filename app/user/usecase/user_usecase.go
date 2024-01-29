@@ -6,10 +6,7 @@ import (
 	help "belajar-api/helper"
 	"errors"
 	"net/http"
-	"os"
-	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -19,7 +16,7 @@ type IUserUsecase interface {
 	SignUp(user domain.UsersRequests) (domain.Users, any)
 	UpdateUser(id int, user domain.UsersRequests) (domain.Users, any)
 	DeleteUser(id int) (domain.Users, any)
-	LoginUser(UserLogin domain.UserLogin, email string) (domain.Users, string, any)
+	LoginUser(UserLogin domain.UserLogin, email string) (domain.Users, interface{}, any)
 }
 
 type UserUsecase struct {
@@ -59,7 +56,7 @@ func (u *UserUsecase) FindUser(id int) (domain.Users, any) {
 }
 
 func (u *UserUsecase) SignUp(userRequest domain.UsersRequests) (domain.Users, any) {
-	isUserExist := u.userRepository.FindUserByCondition(&domain.Users{}, userRequest.Email)
+	isUserExist := u.userRepository.FindUserByEmail(&domain.Users{}, userRequest.Email)
 	if isUserExist == nil {
 		return domain.Users{}, help.ErrorObject{
 			Code:    http.StatusConflict,
@@ -145,9 +142,9 @@ func (u *UserUsecase) DeleteUser(id int) (domain.Users, any) {
 	return user, err
 }
 
-func (u *UserUsecase) LoginUser(UserLogin domain.UserLogin, email string) (domain.Users, string, any) {
+func (u *UserUsecase) LoginUser(UserLogin domain.UserLogin, email string) (domain.Users, interface{}, any) {
 	var user domain.Users
-	err := u.userRepository.FindUserByCondition(&user, email)
+	err := u.userRepository.FindUserByEmail(&user, email)
 	if err != nil {
 		return domain.Users{}, "", help.ErrorObject{
 			Code:    http.StatusNotFound,
@@ -165,12 +162,7 @@ func (u *UserUsecase) LoginUser(UserLogin domain.UserLogin, email string) (domai
 		}
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": user.ID,
-		"exp": time.Now().Add(time.Minute * 3).Unix(),
-	})
-
-	tokenString, err := token.SignedString([]byte(os.Getenv("SECRET_KEY")))
+	tokenString, err := help.GenerateToken(user)
 	if err != nil {
 		return domain.Users{}, "", help.ErrorObject{
 			Code:    http.StatusInternalServerError,
@@ -179,5 +171,11 @@ func (u *UserUsecase) LoginUser(UserLogin domain.UserLogin, email string) (domai
 		}
 	}
 
-	return user, tokenString, err
+	apiResponse := struct{
+		Token string `json:"token"`
+	}{
+		tokenString,
+	}
+
+	return user, apiResponse, err
 }

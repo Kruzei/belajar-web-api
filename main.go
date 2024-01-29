@@ -41,7 +41,7 @@ func main() {
 	v1.PUT("/books/:id", validate, bookHandler.UpdateBook)
 	v1.DELETE("books/:id", validate, bookHandler.DeleteBook)
 
-	v1.GET("/users", validate, userHandler.FindAllUsers)
+	v1.GET("/users", validate ,userHandler.FindAllUsers)
 	v1.GET("/users/:id", validate, userHandler.FindUser)
 	v1.POST("/signup", userHandler.SignUp)
 	v1.POST("/login", userHandler.Login)

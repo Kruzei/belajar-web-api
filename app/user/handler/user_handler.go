@@ -4,6 +4,7 @@ import (
 	"belajar-api/app/user/usecase"
 	"belajar-api/domain"
 	help "belajar-api/helper"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -106,15 +107,14 @@ func (h *UserHandler) Login(c *gin.Context) {
 		return
 	}
 
-	user, stringToken, errorObject := h.userUsecase.LoginUser(userRequest, userRequest.Email)
+	user, apiResponse, errorObject := h.userUsecase.LoginUser(userRequest, userRequest.Email)
 	if errorObject != nil {
 		errorObject := errorObject.(help.ErrorObject)
 		help.FailedResponse(c, http.StatusBadRequest, "Failed to login", errorObject.Err)
 		return
 	}
 
-	c.SetSameSite(http.SameSiteDefaultMode)
-	c.SetCookie("Authorization", stringToken, 60 * 3, "", "", false, true)
+	fmt.Println(apiResponse)
 
-	help.SuccessLogin(c, http.StatusOK, "Welcome "+user.Name)
+	help.SuccessResponse(c, http.StatusOK, "Welcome " + user.Name, apiResponse)
 }
