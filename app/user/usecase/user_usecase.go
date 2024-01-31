@@ -61,10 +61,9 @@ func (u *UserUsecase) SignUp(userRequest domain.UsersRequests) (domain.Users, an
 		return domain.Users{}, help.ErrorObject{
 			Code:    http.StatusConflict,
 			Message: "failed to create user",
-			Err:     errors.New("name already used"),
+			Err:     errors.New("phone number already used"),
 		}
 	}
-	age, _ := userRequest.Age.Int64()
 
 	hashPassword, err := bcrypt.GenerateFromPassword([]byte(userRequest.Password), 10)
 	if err != nil {
@@ -75,11 +74,10 @@ func (u *UserUsecase) SignUp(userRequest domain.UsersRequests) (domain.Users, an
 		}
 	}
 	user := domain.Users{
-		Email:    userRequest.Email,
 		Name:     userRequest.Name,
-		Age:      int(age),
-		Gender:   userRequest.Gender,
+		Email: userRequest.Email,
 		Password: string(hashPassword),
+		Role: userRequest.Role,
 	}
 
 	err = u.userRepository.SignUp(&user)
@@ -105,7 +103,7 @@ func (u *UserUsecase) UpdateUser(id int, userRequest domain.UsersRequests) (doma
 	}
 
 	user.Name = userRequest.Name
-	user.Password = userRequest.Password
+	user.Email = userRequest.Email
 
 	err = u.userRepository.UpdateUser(&user)
 	if err != nil {

@@ -4,6 +4,9 @@ import (
 	"belajar-api/domain"
 	help "belajar-api/helper"
 	"belajar-api/infrastructure/database"
+	"errors"
+	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
@@ -12,6 +15,7 @@ import (
 
 func RequireAuth(c *gin.Context) {
 	bearerToken := c.Request.Header.Get("Authorization")
+	fmt.Println(bearerToken)
 	token := strings.Split(bearerToken, " ")[1]
 
 	if token == "" {
@@ -38,5 +42,20 @@ func RequireAuth(c *gin.Context) {
 	}
 
 	c.Set("user", user)
+	c.Next()
+}
+
+func OnlyAdmin(c *gin.Context){
+	user, ok := c.Get("user")
+	if !ok {
+		help.FailedResponse(c, http.StatusNotFound, "user not found", errors.New(""))
+		return
+	}
+
+	if user.(domain.Users).Role != "ADMIN"{
+		help.UnathorizedResponse(c, "admin only", errors.New("acces denied"))
+		return
+	}
+
 	c.Next()
 }

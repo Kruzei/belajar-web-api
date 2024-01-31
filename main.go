@@ -4,12 +4,15 @@ import (
 	"belajar-api/app/book/handler"
 	"belajar-api/app/book/repository"
 	"belajar-api/app/book/usecase"
+	borrowhistory_handler "belajar-api/app/borrowhistory/handler"
+	borrowhistory_repository "belajar-api/app/borrowhistory/repository"
+	borrowhistory_usecase "belajar-api/app/borrowhistory/usecase"
 	user_handler "belajar-api/app/user/handler"
 	user_repository "belajar-api/app/user/repository"
 	user_usercase "belajar-api/app/user/usecase"
 	"belajar-api/infrastructure"
 	"belajar-api/infrastructure/database"
-	"belajar-api/middleware"
+	"belajar-api/rest"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,31 +25,23 @@ func main() {
 
 	bookRepository := repository.NewRepository(database.DB)
 	userRepository := user_repository.NewUserRepository(database.DB)
+	borrowedHistoryRepository := borrowhistory_repository.NewBorrowHistoryRepository(database.DB)
 
 	bookUsecase := usecase.NewBookUsecase(bookRepository)
 	userUsecase := user_usercase.NewUserUsecase(userRepository)
+	borrowedHistoryUsecase := borrowhistory_usecase.NewBorrowHistoryUsecase(borrowedHistoryRepository, bookRepository)
 
 	bookHandler := handler.NewBookHandler(bookUsecase)
 	userHandler := user_handler.NewUserHandler(userUsecase)
+	borrowHistoryHandler := borrowhistory_handler.NewBorrowHistoryHandler(borrowedHistoryUsecase)
 
-	validate := middleware.RequireAuth
+	router := rest.NewRest(gin.Default())
 
-	router := gin.Default()
+	router.RouteBooks(bookHandler)
 
-	v1 := router.Group("/v1")
+	router.RouteUsers(userHandler)
 
-	v1.GET("/books/:id", validate, bookHandler.GetBook)
-	v1.GET("/books", validate, bookHandler.GetBooks)
-	v1.POST("/books", validate, bookHandler.PostBookHandler)
-	v1.PUT("/books/:id", validate, bookHandler.UpdateBook)
-	v1.DELETE("books/:id", validate, bookHandler.DeleteBook)
+	router.RouteBorrowHistories(borrowHistoryHandler)
 
-	v1.GET("/users", validate ,userHandler.FindAllUsers)
-	v1.GET("/users/:id", validate, userHandler.FindUser)
-	v1.POST("/signup", userHandler.SignUp)
-	v1.POST("/login", userHandler.Login)
-	v1.PUT("/users/:id", validate, userHandler.UpdateUser)
-	v1.DELETE("/users/:id", validate, userHandler.DeleteUser)
-
-	router.Run() //Default portnya localhost:8080
+	router.Run()
 }

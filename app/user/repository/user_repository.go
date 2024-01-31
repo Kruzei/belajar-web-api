@@ -12,7 +12,7 @@ type IUserRepository interface {
 	SignUp(user *domain.Users) (error)
 	UpdateUser(user *domain.Users) (error)
 	DeleteUser(user *domain.Users) (error)
-	FindUserByEmail(user *domain.Users, name string) (error)
+	FindUserByEmail(user *domain.Users, email string) (error)
 }
 
 type UserRepository struct {

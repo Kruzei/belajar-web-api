@@ -43,7 +43,18 @@ func (h *BookHandler) GetBook(c *gin.Context) {
 	help.SuccessResponse(c, http.StatusOK, "succes get book by id", b)
 }
 
-func (h *BookHandler) PostBookHandler(c *gin.Context) {
+func (h *BookHandler) GetAvaibleBook(c *gin.Context){
+	books, errorObject := h.bookUsecase.GetAvaibleBook()
+	if errorObject != nil {
+		errorObject := errorObject.(help.ErrorObject)
+		help.FailedResponse(c, http.StatusBadRequest, "failed get all books", errorObject.Err)
+		return
+	}
+
+	help.SuccessResponse(c, http.StatusOK, "succes get all avaible books", books)
+}
+
+func (h *BookHandler) CreateBook(c *gin.Context) {
 	var bookRequest domain.BookRequest
 
 	err := c.ShouldBindJSON(&bookRequest)
@@ -99,3 +110,32 @@ func (h *BookHandler) DeleteBook(c *gin.Context) {
 
 	help.SuccessResponse(c, http.StatusOK, "succes delete book", b)
 }
+
+func (h *BookHandler) BorrowBook(c *gin.Context){
+	bookIdString := c.Param("bookid")
+	bookId, _ := strconv.Atoi(bookIdString)
+
+	borrowedBook , errorObject := h.bookUsecase.BorrowBook(bookId, c)
+	if errorObject != nil{
+		errorObject := errorObject.(help.ErrorObject)
+		help.FailedResponse(c, http.StatusBadRequest, "failed to borrow book", errorObject.Err)
+		return
+	}
+
+	help.SuccessResponse(c, http.StatusOK, "success borrow book", borrowedBook)
+}
+
+func (h *BookHandler) ReturnBook(c *gin.Context){
+	bookIdString := c.Param("bookid")
+	bookId, _ := strconv.Atoi(bookIdString)
+
+	returnBook, errorObject := h.bookUsecase.ReturnBook(bookId, c)
+	if errorObject != nil{
+		errorObject := errorObject.(help.ErrorObject)
+		help.FailedResponse(c, http.StatusBadRequest, "failed to return book", errorObject.Err)
+		return
+	}
+
+	help.SuccessResponse(c, http.StatusOK, "success return book", returnBook)
+}
+
