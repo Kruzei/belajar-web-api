@@ -40,8 +40,8 @@ func (rest *Rest) RouteUsers(userHandler *user_handler.UserHandler) {
 	authorization := middleware.OnlyAdmin
 	v1 := rest.gin.Group("/v1")
 
-	v1.GET("/users", validate, authorization, userHandler.FindAllUsers)
-	v1.GET("/users/:id", validate, authorization, userHandler.FindUser)
+	v1.GET("/users", validate, authorization, userHandler.GetAllUsers)
+	v1.GET("/users/:id", validate, authorization, userHandler.GetUser)
 	v1.POST("/signup", userHandler.SignUp)
 	v1.POST("/login", userHandler.Login)
 	v1.PUT("/users/:id", validate, userHandler.UpdateUser)

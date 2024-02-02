@@ -19,7 +19,7 @@ func NewBookHandler(bookUsecase usecase.IBookUsecase) *BookHandler {
 }
 
 func (h *BookHandler) GetBooks(c *gin.Context) {
-	books, errorObject := h.bookUsecase.FindAllBooks()
+	books, errorObject := h.bookUsecase.GetAllBooks()
 	if errorObject != nil {
 		errorObject := errorObject.(help.ErrorObject)
 		help.FailedResponse(c, http.StatusBadRequest, "failed get all books", errorObject.Err)
@@ -33,7 +33,7 @@ func (h *BookHandler) GetBook(c *gin.Context) {
 	idString := c.Param("id")
 	id, _ := strconv.Atoi(idString)
 
-	b, errorObject := h.bookUsecase.FindBookById(id)
+	b, errorObject := h.bookUsecase.GetBookById(id)
 	if errorObject != nil {
 		errorObject := errorObject.(help.ErrorObject)
 		help.FailedResponse(c, http.StatusBadRequest, "failed get book by id", errorObject.Err)

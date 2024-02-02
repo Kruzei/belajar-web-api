@@ -11,8 +11,8 @@ import (
 )
 
 type IUserUsecase interface {
-	FindAllUsers() ([]domain.Users, any)
-	FindUser(id int) (domain.Users, any)
+	GetAllUsers() ([]domain.Users, any)
+	GetUser(id int) (domain.Users, any)
 	SignUp(user domain.UsersRequests) (domain.Users, any)
 	UpdateUser(id int, user domain.UsersRequests) (domain.Users, any)
 	DeleteUser(id int) (domain.Users, any)
@@ -27,9 +27,9 @@ func NewUserUsecase(repository repository.IUserRepository) *UserUsecase {
 	return &UserUsecase{repository}
 }
 
-func (u *UserUsecase) FindAllUsers() ([]domain.Users, any) {
+func (u *UserUsecase) GetAllUsers() ([]domain.Users, any) {
 	var users []domain.Users
-	err := u.userRepository.FindAllUsers(&users)
+	err := u.userRepository.GetAllUsers(&users)
 	if err != nil {
 		return []domain.Users{}, help.ErrorObject{
 			Code:    http.StatusNotFound,
@@ -41,9 +41,9 @@ func (u *UserUsecase) FindAllUsers() ([]domain.Users, any) {
 	return users, err
 }
 
-func (u *UserUsecase) FindUser(id int) (domain.Users, any) {
+func (u *UserUsecase) GetUser(id int) (domain.Users, any) {
 	var user domain.Users
-	err := u.userRepository.FindUser(&user, id)
+	err := u.userRepository.GetUser(&user, id)
 	if err != nil {
 		return domain.Users{}, help.ErrorObject{
 			Code:    http.StatusNotFound,
@@ -56,7 +56,7 @@ func (u *UserUsecase) FindUser(id int) (domain.Users, any) {
 }
 
 func (u *UserUsecase) SignUp(userRequest domain.UsersRequests) (domain.Users, any) {
-	isUserExist := u.userRepository.FindUserByEmail(&domain.Users{}, userRequest.Email)
+	isUserExist := u.userRepository.GetUserByEmail(&domain.Users{}, userRequest.Email)
 	if isUserExist == nil {
 		return domain.Users{}, help.ErrorObject{
 			Code:    http.StatusConflict,
@@ -75,9 +75,9 @@ func (u *UserUsecase) SignUp(userRequest domain.UsersRequests) (domain.Users, an
 	}
 	user := domain.Users{
 		Name:     userRequest.Name,
-		Email: userRequest.Email,
+		Email:    userRequest.Email,
 		Password: string(hashPassword),
-		Role: userRequest.Role,
+		Role:     userRequest.Role,
 	}
 
 	err = u.userRepository.SignUp(&user)
@@ -93,7 +93,7 @@ func (u *UserUsecase) SignUp(userRequest domain.UsersRequests) (domain.Users, an
 
 func (u *UserUsecase) UpdateUser(id int, userRequest domain.UsersRequests) (domain.Users, any) {
 	var user domain.Users
-	err := u.userRepository.FindUser(&user, id)
+	err := u.userRepository.GetUser(&user, id)
 	if err != nil {
 		return domain.Users{}, help.ErrorObject{
 			Code:    http.StatusNotFound,
@@ -119,7 +119,7 @@ func (u *UserUsecase) UpdateUser(id int, userRequest domain.UsersRequests) (doma
 
 func (u *UserUsecase) DeleteUser(id int) (domain.Users, any) {
 	var user domain.Users
-	err := u.userRepository.FindUser(&user, id)
+	err := u.userRepository.GetUser(&user, id)
 	if err != nil {
 		return domain.Users{}, help.ErrorObject{
 			Code:    http.StatusNotFound,
@@ -142,7 +142,7 @@ func (u *UserUsecase) DeleteUser(id int) (domain.Users, any) {
 
 func (u *UserUsecase) LoginUser(UserLogin domain.UserLogin, email string) (domain.Users, interface{}, any) {
 	var user domain.Users
-	err := u.userRepository.FindUserByEmail(&user, email)
+	err := u.userRepository.GetUserByEmail(&user, email)
 	if err != nil {
 		return domain.Users{}, "", help.ErrorObject{
 			Code:    http.StatusNotFound,
@@ -169,7 +169,7 @@ func (u *UserUsecase) LoginUser(UserLogin domain.UserLogin, email string) (domai
 		}
 	}
 
-	apiResponse := struct{
+	apiResponse := struct {
 		Token string `json:"token"`
 	}{
 		tokenString,

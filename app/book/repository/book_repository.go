@@ -7,11 +7,11 @@ import (
 )
 
 type IBookRepository interface {
-	FindAll(books *[]domain.Books) error
-	FindById(book *domain.Books, id int) error
+	GetAllBooks(books *[]domain.Books) error
+	GetBookById(book *domain.Books, id int) error
 	GetAvailableBook(books *[]domain.Books) error
 	GetBookByCondition(books *[]domain.Books, condition string, value any) error
-	FindBorrowedBook(book *domain.BorrowHistories, bookId int) error
+	GetBorrowedBook(book *domain.BorrowHistories, bookId int) error
 	CreateBook(book *domain.Books) error
 	Update(book *domain.Books) error
 	Delete(book *domain.Books) error
@@ -27,12 +27,12 @@ func NewRepository(db *gorm.DB) *BookRepository {
 	return &BookRepository{db}
 }
 
-func (r *BookRepository) FindAll(books *[]domain.Books) error {
+func (r *BookRepository) GetAllBooks(books *[]domain.Books) error {
 	err := r.db.Find(books).Error
 	return err
 }
 
-func (r *BookRepository) FindById(book *domain.Books, id int) error {
+func (r *BookRepository) GetBookById(book *domain.Books, id int) error {
 	err := r.db.Where("id = ?", id).First(&book).Error
 	return err
 }
@@ -47,7 +47,7 @@ func (r *BookRepository) GetBookByCondition(books *[]domain.Books, condition str
 	return err
 }
 
-func (r *BookRepository) FindBorrowedBook(book *domain.BorrowHistories, bookId int) error {
+func (r *BookRepository) GetBorrowedBook(book *domain.BorrowHistories, bookId int) error {
 	err := r.db.Table("borrowhistories").Where("book_id = ?", bookId).Last(&book).Error
 
 	return err
