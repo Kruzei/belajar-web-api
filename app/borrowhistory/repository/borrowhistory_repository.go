@@ -7,9 +7,9 @@ import (
 )
 
 type IBorrowHistory interface {
-	GetBorrowedBook(books *[]domain.Books, users *[]domain.Users) error
+	GetBorrowedHistories(borrowHistories *[]domain.BorrowHistories) error
 	GetBorrowHistory(borrowHistories *[]domain.BorrowHistories) error
-	GetAllBookById( books *[]domain.Books) error
+	GetBorrowedBooks(borrowHistory *[]domain.BorrowHistories) error
 }
 
 type BorrowHistoryRepository struct {
@@ -20,17 +20,17 @@ func NewBorrowHistoryRepository(db *gorm.DB) *BorrowHistoryRepository {
 	return &BorrowHistoryRepository{db}
 }
 
-func (r *BorrowHistoryRepository) GetBorrowedBook(books *[]domain.Books, users *[]domain.Users) error {
-	err := r.db.Model(books).Association("Users").Find(&users)
+func (r *BorrowHistoryRepository) GetBorrowedHistories(borrowHistories *[]domain.BorrowHistories) error {
+	err := r.db.Joins("join books on books.id = borrowhistories.book_id").Find(&borrowHistories).Error
 	return err
 }
 
-func (r *BorrowHistoryRepository) GetBorrowHistory(borrowHistories *[]domain.BorrowHistories) error{
-	err := r.db.Find(&borrowHistories).Error
+func (r *BorrowHistoryRepository) GetBorrowedBooks(borrowHistory *[]domain.BorrowHistories) error {
+	err := r.db.Model(domain.BorrowHistories{}).Preload("User").Preload("Book", "status = ?", "NOT AVAIBLE").Find(borrowHistory).Error
 	return err
 }
 
-func (r *BorrowHistoryRepository) GetAllBookById(books *[]domain.Books) error{
-	err := r.db.Joins("join borrowhistories on borrowhistories.book_id = books.id").Find(&books).Error
+func (r *BorrowHistoryRepository) GetBorrowHistory(borrowHistories *[]domain.BorrowHistories) error {
+	err := r.db.Model(domain.BorrowHistories{}).Preload("Book").Find(&borrowHistories).Error
 	return err
 }

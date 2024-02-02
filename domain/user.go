@@ -29,13 +29,13 @@ type UserLogin struct {
 }
 
 type Users struct {
-	ID       int    `json:"id" gorm:"primary key"`
-	Name     string `json:"name"`
-	Password string `json:"password"`
-	Email    string `json:"email" gorm:"unique"`
-	Role     string `json:"role"`
-	BorrowHistories []Books   `json:"-" gorm:"many2many:borrowhistories;foreignKey:id;joinForeignKey:user_id;references:id;joinReferences:book_id"`
+	ID              int               `json:"id" gorm:"primary key"`
+	Name            string            `json:"name"`
+	Password        string            `json:"password"`
+	Email           string            `json:"email" gorm:"unique"`
+	Role            string            `json:"role"`
+	BorrowHistories []BorrowHistories `json:"-" gorm:"foreignKey:user_id;references:id"`
 	// BorrowHistories []BorrowHistories `json:"-"`
-	CreatedAt       time.Time         `json:"-"`
-	UpdatedAt       time.Time         `json:"-"`
+	CreatedAt time.Time `json:"-"`
+	UpdatedAt time.Time `json:"-"`
 }

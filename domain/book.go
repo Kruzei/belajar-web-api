@@ -16,14 +16,14 @@ import (
 //		UpdatedAt time.Time `json:"-"`
 //	}
 type Books struct {
-	ID              int               `json:"id" gorm:"primary key"`
-	Title           string            `json:"title"`
-	Description     string            `json:"description"`
-	Status          string            `json:"status"`
-	Users           []Users           `json:"-" gorm:"many2many:borrowhistories;foreignKey:id;joinForeignKey:book_id;references:id;joinReferences:user_id"`
+	ID          int    `json:"id" gorm:"primary key"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Status      string `json:"status"`
+	// Users           []Users           `json:"-" gorm:"many2many:borrowhistories;foreignKey:id;joinForeignKey:book_id;references:id;joinReferences:user_id"`
 	CreatedAt       time.Time         `json:"-"`
 	UpdatedAt       time.Time         `json:"-"`
-	// User      []BorrowHistories `json:"-" gorm:"foreignKey:book_id;references:id"`
+	BorrowHistories []BorrowHistories `json:"-" gorm:"foreignKey:book_id;references:id"`
 }
 
 type BookRequest struct {

@@ -5,7 +5,6 @@ import (
 	"belajar-api/app/borrowhistory/repository"
 	"belajar-api/domain"
 	help "belajar-api/helper"
-	"errors"
 	"net/http"
 )
 
@@ -24,32 +23,22 @@ func NewBorrowHistoryUsecase(repository repository.IBorrowHistory, bookRepositor
 }
 
 func (s *BorrowHistoryUsecase) GetBorrowedBook() ([]domain.BorrowedBookResponse, any) {
-	var books []domain.Books
-	err := s.bookRepository.GetBookByCondition(&books, "status = ?", "NOT AVAIBLE")
+	var borrowHistories []domain.BorrowHistories
+	err := s.borrowHistoryRepository.GetBorrowedBooks(&borrowHistories)
 	if err != nil {
 		return []domain.BorrowedBookResponse{}, help.ErrorObject{
-			Code:    http.StatusInternalServerError,
-			Message: "failed to get all borrowed book",
+			Code:    http.StatusNotFound,
+			Message: "book not found",
 			Err:     err,
 		}
 	}
 
-	var user []domain.Users
-	err2 := s.borrowHistoryRepository.GetBorrowedBook(&books, &user)
-	if err2 != nil {
-		return []domain.BorrowedBookResponse{}, help.ErrorObject{
-			Code:    http.StatusNotFound,
-			Message: "book not found",
-			Err:     errors.New(""),
-		}
-	}
-
 	var booksResponse []domain.BorrowedBookResponse
-	for i, b := range books {
+	for _, b := range borrowHistories {
 		bookResponse := domain.BorrowedBookResponse{
-			Name:        user[i].Name,
-			Title:       b.Title,
-			Description: b.Description,
+			Name:        b.User.Name,
+			Title:       b.Book.Title,
+			Description: b.Book.Title,
 		}
 
 		booksResponse = append(booksResponse, bookResponse)
@@ -69,20 +58,11 @@ func (s *BorrowHistoryUsecase) GetBorrowHistory() ([]domain.BorrowHistoryRespons
 		}
 	}
 
-	var books []domain.Books
-	err = s.borrowHistoryRepository.GetAllBookById(&books)
-	if err != nil {
-		return []domain.BorrowHistoryResponse{}, help.ErrorObject{
-			Code:    http.StatusInternalServerError,
-			Message: "DISINI",
-			Err:     err,
-		}
-	}
 	var borrowHistoriesResponse []domain.BorrowHistoryResponse
 
-	for i, b := range borrowHistories {
+	for _, b := range borrowHistories {
 		borrowHistoryResponse := domain.BorrowHistoryResponse{
-			Title:      books[i].Title,
+			Title:      b.Book.Title,
 			BorrowTime: b.BorrowTime,
 			ReturnTime: b.ReturnTime,
 		}
