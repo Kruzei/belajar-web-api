@@ -25,7 +25,7 @@ func NewBorrowHistoryUsecase(repository repository.IBorrowHistory, bookRepositor
 
 func (s *BorrowHistoryUsecase) GetBorrowedBook() ([]domain.BorrowedBookResponse, any) {
 	var books []domain.Books
-	err := s.bookRepository.GetBookByCondition(&books, "status = ?", "NOT AVAIBLE")
+	err := s.bookRepository.GetBookByCondition(&books, "status = ?", "NOT AVAILABLE")
 	if err != nil {
 		return []domain.BorrowedBookResponse{}, help.ErrorObject{
 			Code:    http.StatusInternalServerError,
@@ -74,7 +74,7 @@ func (s *BorrowHistoryUsecase) GetBorrowHistory() ([]domain.BorrowHistoryRespons
 	if err != nil {
 		return []domain.BorrowHistoryResponse{}, help.ErrorObject{
 			Code:    http.StatusInternalServerError,
-			Message: "DISINI",
+			Message: "error occured when find all book",
 			Err:     err,
 		}
 	}

@@ -43,15 +43,15 @@ func (h *BookHandler) GetBook(c *gin.Context) {
 	help.SuccessResponse(c, http.StatusOK, "succes get book by id", b)
 }
 
-func (h *BookHandler) GetAvaibleBook(c *gin.Context){
-	books, errorObject := h.bookUsecase.GetAvaibleBook()
+func (h *BookHandler) GetAvailableBook(c *gin.Context){
+	books, errorObject := h.bookUsecase.GetAvailableBook()
 	if errorObject != nil {
 		errorObject := errorObject.(help.ErrorObject)
 		help.FailedResponse(c, http.StatusBadRequest, "failed get all books", errorObject.Err)
 		return
 	}
 
-	help.SuccessResponse(c, http.StatusOK, "succes get all avaible books", books)
+	help.SuccessResponse(c, http.StatusOK, "succes get all available books", books)
 }
 
 func (h *BookHandler) CreateBook(c *gin.Context) {

@@ -9,7 +9,7 @@ import (
 type IBookRepository interface {
 	FindAll(books *[]domain.Books) error
 	FindById(book *domain.Books, id int) error
-	GetAvaibleBook(books *[]domain.Books) error
+	GetAvailableBook(books *[]domain.Books) error
 	GetBookByCondition(books *[]domain.Books, condition string, value any) error
 	FindBorrowedBook(book *domain.BorrowHistories, bookId int) error
 	CreateBook(book *domain.Books) error
@@ -37,12 +37,12 @@ func (r *BookRepository) FindById(book *domain.Books, id int) error {
 	return err
 }
 
-func (r *BookRepository) GetAvaibleBook(books *[]domain.Books) error {
-	err := r.db.Where("status = ?", "AVAIBLE").Find(&books).Error
+func (r *BookRepository) GetAvailableBook(books *[]domain.Books) error {
+	err := r.db.Where("status = ?", "AVAILABLE").Find(&books).Error
 	return err
 }
 
-func (r *BookRepository) GetBookByCondition(books *[]domain.Books, condition string, value any) error{
+func (r *BookRepository) GetBookByCondition(books *[]domain.Books, condition string, value any) error {
 	err := r.db.Where(condition, value).Find(&books).Error
 	return err
 }
