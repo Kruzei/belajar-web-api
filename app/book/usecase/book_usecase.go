@@ -7,9 +7,6 @@ import (
 	help "belajar-api/helper"
 	"errors"
 	"net/http"
-	"time"
-
-	"github.com/gin-gonic/gin"
 )
 
 type IBookUsecase interface {
@@ -19,8 +16,6 @@ type IBookUsecase interface {
 	CreateBook(bookRequest domain.BookRequest) (domain.Books, any)
 	Update(id int, bookRequest domain.BookRequest) (domain.Books, any)
 	Delete(id int) (domain.Books, any)
-	BorrowBook(bookId int, c *gin.Context) (domain.Books, any)
-	ReturnBook(bookId int, c *gin.Context) (domain.Books, any)
 }
 
 type BookUsecase struct {
@@ -62,11 +57,11 @@ func (s *BookUsecase) FindBookById(id int) (domain.Books, any) {
 func (s *BookUsecase) GetAvaibleBook() ([]domain.Books, any) {
 	var books []domain.Books
 	err := s.bookRepository.GetAvaibleBook(&books)
-	if err != nil{
+	if err != nil {
 		return books, help.ErrorObject{
-			Code: http.StatusNotFound,
+			Code:    http.StatusNotFound,
 			Message: "error occured when find avaible book",
-			Err: err,
+			Err:     err,
 		}
 	}
 
@@ -77,7 +72,7 @@ func (s *BookUsecase) CreateBook(bookRequest domain.BookRequest) (domain.Books, 
 	book := domain.Books{
 		Title:       bookRequest.Title,
 		Description: bookRequest.Description,
-		Status: bookRequest.Status,
+		Status:      bookRequest.Status,
 	}
 
 	err := s.bookRepository.CreateBook(&book)
@@ -133,111 +128,6 @@ func (s *BookUsecase) Delete(id int) (domain.Books, any) {
 		return domain.Books{}, help.ErrorObject{
 			Code:    http.StatusInternalServerError,
 			Message: "failed to delete book",
-			Err:     err,
-		}
-	}
-
-	return book, err
-}
-
-func (s *BookUsecase) BorrowBook(bookId int, c *gin.Context) (domain.Books, any) {
-	user, exists := c.Get("user")
-	if !exists{
-		return domain.Books{}, help.ErrorObject{
-			Code: http.StatusNotFound,
-			Message: "user not found",
-			Err: errors.New(""),
-		}
-	}
-
-	userId := user.(domain.Users).ID
-	var book domain.Books
-	err := s.bookRepository.FindById(&book, bookId)
-	if err != nil {
-		return domain.Books{}, help.ErrorObject{
-			Code:    http.StatusNotFound,
-			Message: "book is not exist",
-			Err:     err,
-		}
-	}
-
-	if book.Status != "AVAIBLE"{
-		return domain.Books{}, help.ErrorObject{
-			Code: http.StatusBadRequest,
-			Message: "book not avaible",
-			Err: errors.New(""),
-		}
-	}
-
-	book.Status = "NOT AVAIBLE"
-	err = s.bookRepository.Update(&book)
-	if err != nil{
-		return domain.Books{}, help.ErrorObject{
-			Code: http.StatusInternalServerError,
-			Message: "failed to borrow book",
-			Err: err,
-		}
-	}
-
-	date := time.Now()
-
-	var borrowBook = domain.BorrowHistories{
-		UserId: userId,
-		BookId: book.ID,
-		BorrowTime: date,
-	}
-
-	err = s.bookRepository.Borrow(&borrowBook)
-	if err != nil {
-		return domain.Books{}, help.ErrorObject{
-			Code:    http.StatusInternalServerError,
-			Message: "failed to borrow book",
-			Err:     err,
-		}
-	}
-
-	return book, err
-}
-
-func (s *BookUsecase) ReturnBook(bookId int, c *gin.Context) (domain.Books, any) {
-	var book domain.Books
-	err := s.bookRepository.FindById(&book, bookId)
-	if err != nil {
-		return domain.Books{}, help.ErrorObject{
-			Code:    http.StatusNotFound,
-			Message: "book is not exist",
-			Err:     err,
-		}
-	}
-
-	var borrowedBook domain.BorrowHistories
-	err = s.bookRepository.FindBorrowedBook(&borrowedBook, bookId)
-	if err != nil {
-		return domain.Books{}, help.ErrorObject{
-			Code: http.StatusNotFound,
-			Message: "borrowed book not found",
-			Err: err,
-		}
-	}
-
-	book.Status = "AVAIBLE"
-	err = s.bookRepository.Update(&book)
-	if err != nil {
-		return domain.Books{}, help.ErrorObject{
-			Code:    http.StatusInternalServerError,
-			Message: "failed to return book",
-			Err:     err,
-		}
-	}
-
-	date := time.Now()
-	borrowedBook.ReturnTime = date
-
-	err = s.bookRepository.ReturnBook(&borrowedBook)
-	if err != nil {
-		return domain.Books{}, help.ErrorObject{
-			Code:    http.StatusInternalServerError,
-			Message: "failed to return book",
 			Err:     err,
 		}
 	}

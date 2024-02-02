@@ -10,6 +10,8 @@ type IBorrowHistory interface {
 	GetBorrowedHistories(borrowHistories *[]domain.BorrowHistories) error
 	GetBorrowHistory(borrowHistories *[]domain.BorrowHistories) error
 	GetBorrowedBooks(borrowHistory *[]domain.BorrowHistories) error
+	Borrow(borrow *domain.BorrowHistories) error
+	ReturnBook(borrow *domain.BorrowHistories) error
 }
 
 type BorrowHistoryRepository struct {
@@ -33,4 +35,34 @@ func (r *BorrowHistoryRepository) GetBorrowedBooks(borrowHistory *[]domain.Borro
 func (r *BorrowHistoryRepository) GetBorrowHistory(borrowHistories *[]domain.BorrowHistories) error {
 	err := r.db.Model(domain.BorrowHistories{}).Preload("Book").Find(&borrowHistories).Error
 	return err
+}
+
+func (r *BorrowHistoryRepository) Borrow(borrow *domain.BorrowHistories) error {
+	tx := r.db.Begin()
+
+	err := r.db.Table("borrowhistories").Create(map[string]interface{}{
+		"user_id":     borrow.UserId,
+		"book_id":     borrow.BookId,
+		"borrow_time": borrow.BorrowTime,
+	}).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	tx.Commit()
+	return err
+}
+
+func (r *BorrowHistoryRepository) ReturnBook(borrow *domain.BorrowHistories) error {
+	tx := r.db.Begin()
+
+	err := r.db.Table("borrowhistories").Save(borrow).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	tx.Commit()
+	return nil
 }

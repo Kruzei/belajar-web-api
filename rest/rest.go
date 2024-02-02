@@ -31,8 +31,6 @@ func (rest *Rest) RouteBooks(bookHandler *book_handler.BookHandler) {
 	v1.DELETE("books/:id", validate, authorization, bookHandler.DeleteBook)
 
 	v1.GET("users/books/avaible", validate, bookHandler.GetAvaibleBook)
-	v1.POST("/users/books/:bookid/borrows", validate, bookHandler.BorrowBook)
-	v1.POST("/users/books/:bookid/returns", validate, bookHandler.ReturnBook)
 }
 
 func (rest *Rest) RouteUsers(userHandler *user_handler.UserHandler) {
@@ -55,6 +53,8 @@ func (rest *Rest) RouteBorrowHistories(borrowHistoryHandler *borrowhistory_handl
 
 	v1.GET("/books/borrowed", validate, authorization, borrowHistoryHandler.GetBorrowedBook)
 	v1.GET("/books/books-history", validate, authorization, borrowHistoryHandler.GetBorrowHistory)
+	v1.POST("/users/books/:bookid/borrows", validate, borrowHistoryHandler.BorrowBook)
+	v1.POST("/users/books/:bookid/returns", validate, borrowHistoryHandler.ReturnBook)
 }
 
 func (rest *Rest) Run() {

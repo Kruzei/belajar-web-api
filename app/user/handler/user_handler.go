@@ -23,7 +23,7 @@ func (h *UserHandler) FindAllUsers(c *gin.Context) {
 	users, errorObject := h.userUsecase.FindAllUsers()
 	if errorObject != nil {
 		errorObject := errorObject.(help.ErrorObject)
-		help.FailedResponse(c, http.StatusBadRequest, "Failed get all users", errorObject.Err)
+		help.FailedResponse(c, http.StatusBadRequest, errorObject.Message, errorObject.Err)
 		return
 	}
 
@@ -36,7 +36,7 @@ func (h *UserHandler) FindUser(c *gin.Context) {
 	user, errorObject := h.userUsecase.FindUser(id)
 	if errorObject != nil {
 		errorObject := errorObject.(help.ErrorObject)
-		help.FailedResponse(c, http.StatusBadRequest, "Failed to find user", errorObject.Err)
+		help.FailedResponse(c, http.StatusBadRequest, errorObject.Message, errorObject.Err)
 		return
 	}
 
@@ -77,7 +77,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 	user, errorObject := h.userUsecase.UpdateUser(id, userRequest)
 	if errorObject != nil {
 		errorObject := errorObject.(help.ErrorObject)
-		help.FailedResponse(c, http.StatusBadRequest, "Failed to update user", errorObject.Err)
+		help.FailedResponse(c, http.StatusBadRequest, errorObject.Message, errorObject.Err)
 		return
 	}
 
@@ -91,7 +91,7 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 
 	if errorObject != nil {
 		errorObject := errorObject.(help.ErrorObject)
-		help.FailedResponse(c, http.StatusBadRequest, "Failed to delete user", errorObject.Err)
+		help.FailedResponse(c, http.StatusBadRequest, errorObject.Message, errorObject.Err)
 		return
 	}
 
@@ -110,7 +110,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 	user, apiResponse, errorObject := h.userUsecase.LoginUser(userRequest, userRequest.Email)
 	if errorObject != nil {
 		errorObject := errorObject.(help.ErrorObject)
-		help.FailedResponse(c, http.StatusBadRequest, "Failed to login", errorObject.Err)
+		help.FailedResponse(c, http.StatusBadRequest, errorObject.Message, errorObject.Err)
 		return
 	}
 
