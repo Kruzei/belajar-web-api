@@ -44,7 +44,7 @@ func (rest *Rest) RouteUsers(userHandler *user_handler.UserHandler) {
 	v1.POST("/login", userHandler.Login)
 	v1.PUT("/users/:id", validate, userHandler.UpdateUser)
 	v1.DELETE("/users/:id", validate, userHandler.DeleteUser)
-	v1.GET("/user/:user_id", userHandler.GetUser)
+	// v1.GET("/user/:user_id", userHandler.GetUser)
 }
 
 func (rest *Rest) RouteBorrowHistories(borrowHistoryHandler *borrowhistory_handler.BorrowHistoryHandler) {

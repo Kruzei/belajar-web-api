@@ -116,5 +116,23 @@ func (h *UserHandler) Login(c *gin.Context) {
 
 	fmt.Println(apiResponse)
 
-	help.SuccessResponse(c, http.StatusOK, "Welcome " + user.Name, apiResponse)
+	help.SuccessResponse(c, http.StatusOK, "Welcome "+user.Name, apiResponse)
 }
+
+// func (h *UserHandler) GetUser(c *gin.Context) {
+// 	userIdString := c.Param("user_id")
+
+// 	userId, _ := strconv.Atoi(userIdString)
+
+// 	param := domain.UserParam{
+// 		ID: userId,
+// 	}
+
+// 	user, err := h.userUsecase.GetUser(param)
+// 	if err != nil {
+// 		help.FailedResponse(c, http.StatusInternalServerError, "not found", err)
+// 		return
+// 	}
+
+// 	help.SuccessResponse(c, http.StatusOK, "success", user)
+// }

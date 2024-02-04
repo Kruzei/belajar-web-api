@@ -17,6 +17,7 @@ type IUserUsecase interface {
 	UpdateUser(id int, user domain.UsersRequests) (domain.Users, any)
 	DeleteUser(id int) (domain.Users, any)
 	LoginUser(UserLogin domain.UserLogin, email string) (domain.Users, interface{}, any)
+	// GetUser(param domain.UserParam) (domain.Users, error)
 }
 
 type UserUsecase struct {
@@ -75,9 +76,9 @@ func (u *UserUsecase) SignUp(userRequest domain.UsersRequests) (domain.Users, an
 	}
 	user := domain.Users{
 		Name:     userRequest.Name,
-		Email: userRequest.Email,
+		Email:    userRequest.Email,
 		Password: string(hashPassword),
-		Role: userRequest.Role,
+		Role:     userRequest.Role,
 	}
 
 	err = u.userRepository.SignUp(&user)
@@ -150,6 +151,14 @@ func (u *UserUsecase) LoginUser(UserLogin domain.UserLogin, email string) (domai
 			Err:     errors.New("invalid user or password"),
 		}
 	}
+	// user, err := u.userRepository.GetUser(domain.UserParam{Email: email})
+	// if err != nil {
+	// 	return domain.Users{}, "", help.ErrorObject{
+	// 		Code:    http.StatusNotFound,
+	// 		Message: "invalid user or password",
+	// 		Err:     errors.New("invalid user or password"),
+	// 	}
+	// }
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(UserLogin.Password))
 	if err != nil {
@@ -169,7 +178,7 @@ func (u *UserUsecase) LoginUser(UserLogin domain.UserLogin, email string) (domai
 		}
 	}
 
-	apiResponse := struct{
+	apiResponse := struct {
 		Token string `json:"token"`
 	}{
 		tokenString,
@@ -177,3 +186,12 @@ func (u *UserUsecase) LoginUser(UserLogin domain.UserLogin, email string) (domai
 
 	return user, apiResponse, err
 }
+
+// func (u *UserUsecase) GetUser(param domain.UserParam) (domain.Users, error) {
+// 	user, err := u.userRepository.GetUser(param)
+// 	if err != nil {
+// 		return user, nil
+// 	}
+
+// 	return user, nil
+// }
