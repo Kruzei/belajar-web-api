@@ -7,12 +7,12 @@ import (
 )
 
 type IUserRepository interface {
-	FindAllUsers(users *[]domain.Users) (error)
-	FindUser(user *domain.Users, id int) (error)
+	GetAllUsers(users *[]domain.Users) (error)
+	GetUser(user *domain.Users, id int) (error)
+	GetUserByEmail(user *domain.Users, email string) (error)
 	SignUp(user *domain.Users) (error)
 	UpdateUser(user *domain.Users) (error)
 	DeleteUser(user *domain.Users) (error)
-	FindUserByEmail(user *domain.Users, email string) (error)
 }
 
 type UserRepository struct {
@@ -23,13 +23,18 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 	return &UserRepository{db}
 }
 
-func (r *UserRepository) FindAllUsers(users *[]domain.Users) (error) {
+func (r *UserRepository) GetAllUsers(users *[]domain.Users) (error) {
 	err := r.db.Find(users).Error
 	return err
 }
 
-func (r *UserRepository) FindUser(user *domain.Users, id int) (error) {
+func (r *UserRepository) GetUser(user *domain.Users, id int) (error) {
 	err := r.db.Where("id = ?", id).First(user).Error
+	return err
+}
+
+func (r *UserRepository) GetUserByEmail(user *domain.Users, email string)(error){
+	err := r.db.Where("email = ?", email).First(&user).Error
 	return err
 }
 
@@ -48,7 +53,3 @@ func (r *UserRepository) DeleteUser(user *domain.Users)(error){
 	return err
 }
 
-func (r *UserRepository) FindUserByEmail(user *domain.Users, email string)(error){
-	err := r.db.Where("email = ?", email).First(&user).Error
-	return err
-}

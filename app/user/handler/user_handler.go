@@ -19,8 +19,8 @@ func NewUserHandler(userUsecase usecase.IUserUsecase) *UserHandler {
 	return &UserHandler{userUsecase}
 }
 
-func (h *UserHandler) FindAllUsers(c *gin.Context) {
-	users, errorObject := h.userUsecase.FindAllUsers()
+func (h *UserHandler) GetAllUsers(c *gin.Context) {
+	users, errorObject := h.userUsecase.GetAllUsers()
 	if errorObject != nil {
 		errorObject := errorObject.(help.ErrorObject)
 		help.FailedResponse(c, http.StatusBadRequest, "Failed get all users", errorObject.Err)
@@ -30,17 +30,17 @@ func (h *UserHandler) FindAllUsers(c *gin.Context) {
 	help.SuccessResponse(c, http.StatusOK, "Success get all users", users)
 }
 
-func (h *UserHandler) FindUser(c *gin.Context) {
+func (h *UserHandler) GetUser(c *gin.Context) {
 	idString := c.Param("id")
 	id, _ := strconv.Atoi(idString)
-	user, errorObject := h.userUsecase.FindUser(id)
+	user, errorObject := h.userUsecase.GetUser(id)
 	if errorObject != nil {
 		errorObject := errorObject.(help.ErrorObject)
-		help.FailedResponse(c, http.StatusBadRequest, "Failed to find user", errorObject.Err)
+		help.FailedResponse(c, http.StatusBadRequest, "Failed to get user", errorObject.Err)
 		return
 	}
 
-	help.SuccessResponse(c, http.StatusOK, "Success find user", user)
+	help.SuccessResponse(c, http.StatusOK, "Success get user", user)
 }
 
 func (h *UserHandler) SignUp(c *gin.Context) {
@@ -116,5 +116,5 @@ func (h *UserHandler) Login(c *gin.Context) {
 
 	fmt.Println(apiResponse)
 
-	help.SuccessResponse(c, http.StatusOK, "Welcome " + user.Name, apiResponse)
+	help.SuccessResponse(c, http.StatusOK, "Welcome "+user.Name, apiResponse)
 }

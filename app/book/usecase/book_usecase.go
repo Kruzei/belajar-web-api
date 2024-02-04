@@ -13,9 +13,9 @@ import (
 )
 
 type IBookUsecase interface {
-	FindAllBooks() ([]domain.Books, any)
-	FindBookById(id int) (domain.Books, any)
-	GetAvaibleBook() ([]domain.Books, any)
+	GetAllBooks() ([]domain.Books, any)
+	GetBookById(id int) (domain.Books, any)
+	GetAvailableBook() ([]domain.Books, any)
 	CreateBook(bookRequest domain.BookRequest) (domain.Books, any)
 	Update(id int, bookRequest domain.BookRequest) (domain.Books, any)
 	Delete(id int) (domain.Books, any)
@@ -31,9 +31,9 @@ func NewBookUsecase(repository repository.IBookRepository) *BookUsecase {
 	return &BookUsecase{repository}
 }
 
-func (s *BookUsecase) FindAllBooks() ([]domain.Books, any) {
+func (s *BookUsecase) GetAllBooks() ([]domain.Books, any) {
 	var books []domain.Books
-	err := s.bookRepository.FindAll(&books)
+	err := s.bookRepository.GetAllBooks(&books)
 	if err != nil {
 		return books, help.ErrorObject{
 			Code:    http.StatusNotFound,
@@ -45,9 +45,9 @@ func (s *BookUsecase) FindAllBooks() ([]domain.Books, any) {
 	return books, err
 }
 
-func (s *BookUsecase) FindBookById(id int) (domain.Books, any) {
+func (s *BookUsecase) GetBookById(id int) (domain.Books, any) {
 	var book domain.Books
-	err := s.bookRepository.FindById(&book, id)
+	err := s.bookRepository.GetBookById(&book, id)
 	if err != nil {
 		return domain.Books{}, help.ErrorObject{
 			Code:    http.StatusNotFound,
@@ -59,14 +59,14 @@ func (s *BookUsecase) FindBookById(id int) (domain.Books, any) {
 	return book, err
 }
 
-func (s *BookUsecase) GetAvaibleBook() ([]domain.Books, any) {
+func (s *BookUsecase) GetAvailableBook() ([]domain.Books, any) {
 	var books []domain.Books
-	err := s.bookRepository.GetAvaibleBook(&books)
-	if err != nil{
+	err := s.bookRepository.GetAvailableBook(&books)
+	if err != nil {
 		return books, help.ErrorObject{
-			Code: http.StatusNotFound,
-			Message: "error occured when find avaible book",
-			Err: err,
+			Code:    http.StatusNotFound,
+			Message: "error occured when find available book",
+			Err:     err,
 		}
 	}
 
@@ -77,7 +77,7 @@ func (s *BookUsecase) CreateBook(bookRequest domain.BookRequest) (domain.Books, 
 	book := domain.Books{
 		Title:       bookRequest.Title,
 		Description: bookRequest.Description,
-		Status: bookRequest.Status,
+		Status:      bookRequest.Status,
 	}
 
 	err := s.bookRepository.CreateBook(&book)
@@ -94,7 +94,7 @@ func (s *BookUsecase) CreateBook(bookRequest domain.BookRequest) (domain.Books, 
 
 func (s *BookUsecase) Update(id int, bookRequest domain.BookRequest) (domain.Books, any) {
 	var book domain.Books
-	err := s.bookRepository.FindById(&book, id)
+	err := s.bookRepository.GetBookById(&book, id)
 	if err != nil {
 		return domain.Books{}, help.ErrorObject{
 			Code:    http.StatusNotFound,
@@ -119,7 +119,7 @@ func (s *BookUsecase) Update(id int, bookRequest domain.BookRequest) (domain.Boo
 
 func (s *BookUsecase) Delete(id int) (domain.Books, any) {
 	var book domain.Books
-	err := s.bookRepository.FindById(&book, id)
+	err := s.bookRepository.GetBookById(&book, id)
 	if err != nil {
 		return domain.Books{}, help.ErrorObject{
 			Code:    http.StatusNotFound,
@@ -142,17 +142,17 @@ func (s *BookUsecase) Delete(id int) (domain.Books, any) {
 
 func (s *BookUsecase) BorrowBook(bookId int, c *gin.Context) (domain.Books, any) {
 	user, exists := c.Get("user")
-	if !exists{
+	if !exists {
 		return domain.Books{}, help.ErrorObject{
-			Code: http.StatusNotFound,
+			Code:    http.StatusNotFound,
 			Message: "user not found",
-			Err: errors.New(""),
+			Err:     errors.New(""),
 		}
 	}
 
 	userId := user.(domain.Users).ID
 	var book domain.Books
-	err := s.bookRepository.FindById(&book, bookId)
+	err := s.bookRepository.GetBookById(&book, bookId)
 	if err != nil {
 		return domain.Books{}, help.ErrorObject{
 			Code:    http.StatusNotFound,
@@ -161,29 +161,29 @@ func (s *BookUsecase) BorrowBook(bookId int, c *gin.Context) (domain.Books, any)
 		}
 	}
 
-	if book.Status != "AVAIBLE"{
+	if book.Status != "available" {
 		return domain.Books{}, help.ErrorObject{
-			Code: http.StatusBadRequest,
-			Message: "book not avaible",
-			Err: errors.New(""),
+			Code:    http.StatusBadRequest,
+			Message: "book not available",
+			Err:     errors.New(""),
 		}
 	}
 
-	book.Status = "NOT AVAIBLE"
+	book.Status = "NOT AVAILABLE"
 	err = s.bookRepository.Update(&book)
-	if err != nil{
+	if err != nil {
 		return domain.Books{}, help.ErrorObject{
-			Code: http.StatusInternalServerError,
+			Code:    http.StatusInternalServerError,
 			Message: "failed to borrow book",
-			Err: err,
+			Err:     err,
 		}
 	}
 
 	date := time.Now()
 
 	var borrowBook = domain.BorrowHistories{
-		UserId: userId,
-		BookId: book.ID,
+		UserId:     userId,
+		BookId:     book.ID,
 		BorrowTime: date,
 	}
 
@@ -201,7 +201,7 @@ func (s *BookUsecase) BorrowBook(bookId int, c *gin.Context) (domain.Books, any)
 
 func (s *BookUsecase) ReturnBook(bookId int, c *gin.Context) (domain.Books, any) {
 	var book domain.Books
-	err := s.bookRepository.FindById(&book, bookId)
+	err := s.bookRepository.GetBookById(&book, bookId)
 	if err != nil {
 		return domain.Books{}, help.ErrorObject{
 			Code:    http.StatusNotFound,
@@ -211,16 +211,16 @@ func (s *BookUsecase) ReturnBook(bookId int, c *gin.Context) (domain.Books, any)
 	}
 
 	var borrowedBook domain.BorrowHistories
-	err = s.bookRepository.FindBorrowedBook(&borrowedBook, bookId)
+	err = s.bookRepository.GetBorrowedBook(&borrowedBook, bookId)
 	if err != nil {
 		return domain.Books{}, help.ErrorObject{
-			Code: http.StatusNotFound,
+			Code:    http.StatusNotFound,
 			Message: "borrowed book not found",
-			Err: err,
+			Err:     err,
 		}
 	}
 
-	book.Status = "AVAIBLE"
+	book.Status = "AVAILABLE"
 	err = s.bookRepository.Update(&book)
 	if err != nil {
 		return domain.Books{}, help.ErrorObject{

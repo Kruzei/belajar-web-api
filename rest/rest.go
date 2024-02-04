@@ -30,7 +30,7 @@ func (rest *Rest) RouteBooks(bookHandler *book_handler.BookHandler) {
 	v1.PUT("/books/:id", validate, authorization, bookHandler.UpdateBook)
 	v1.DELETE("books/:id", validate, authorization, bookHandler.DeleteBook)
 
-	v1.GET("users/books/avaible", validate, bookHandler.GetAvaibleBook)
+	v1.GET("users/books/available", validate, bookHandler.GetAvailableBook)
 	v1.POST("/users/books/:bookid/borrows", validate, bookHandler.BorrowBook)
 	v1.POST("/users/books/:bookid/returns", validate, bookHandler.ReturnBook)
 }
@@ -40,8 +40,8 @@ func (rest *Rest) RouteUsers(userHandler *user_handler.UserHandler) {
 	authorization := middleware.OnlyAdmin
 	v1 := rest.gin.Group("/v1")
 
-	v1.GET("/users", validate, authorization, userHandler.FindAllUsers)
-	v1.GET("/users/:id", validate, authorization, userHandler.FindUser)
+	v1.GET("/users", validate, authorization, userHandler.GetAllUsers)
+	v1.GET("/users/:id", validate, authorization, userHandler.GetUser)
 	v1.POST("/signup", userHandler.SignUp)
 	v1.POST("/login", userHandler.Login)
 	v1.PUT("/users/:id", validate, userHandler.UpdateUser)
