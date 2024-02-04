@@ -13,6 +13,7 @@ type IUserRepository interface {
 	SignUp(user *domain.Users) (error)
 	UpdateUser(user *domain.Users) (error)
 	DeleteUser(user *domain.Users) (error)
+	// GetUser(param domain.UserParam) (domain.Users, error)
 }
 
 type UserRepository struct {
@@ -43,13 +44,33 @@ func (r *UserRepository) SignUp(user *domain.Users)(error){
 	return err
 }
 
-func (r *UserRepository) UpdateUser(user *domain.Users)(error){
+func (r *UserRepository) UpdateUser(user *domain.Users) error {
 	err := r.db.Save(user).Error
 	return err
 }
 
-func (r *UserRepository) DeleteUser(user *domain.Users)(error){
+func (r *UserRepository) DeleteUser(user *domain.Users) error {
 	err := r.db.Delete(user).Error
 	return err
 }
 
+// func (r *UserRepository) GetUser(param domain.UserParam) (domain.Users, error) {
+// 	var user domain.Users
+// 	err := r.db.Model(&domain.Users{}).Where(&param).First(&user).Error
+
+// 	if err != nil {
+// 		return user, err
+// 	}
+
+// 	return user, nil
+// }
+
+// func (r *UserRepository) CreateUser(inputParam domain.UserInput) (domain.Users, error) {
+// 	var user domain.Users
+// 	err := r.db.Model(&user).Create(&inputParam).Error
+// 	if err != nil {
+// 		return user, err
+// 	}
+
+// 	return user, nil
+// }

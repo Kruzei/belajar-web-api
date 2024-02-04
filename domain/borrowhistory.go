@@ -4,8 +4,10 @@ import "time"
 
 type BorrowHistories struct {
 	Id         int       `json:"id" gorm:"primary key"`
-	UserId     int       `json:"-"`
-	BookId     int       `json:"-"`
+	UserId     int       `json:"-" gorm:"user_id"`
+	BookId     int       `json:"-" gorm:"book_id"`
+	User       Users     `json:"-"`
+	Book       Books     `json:"-"`
 	BorrowTime time.Time `json:"borrow_time"`
 	ReturnTime time.Time `json:"return_time"`
 }
@@ -16,6 +18,12 @@ func (b *BorrowHistories) TableName() string {
 
 type BorrowedBookResponse struct {
 	Name        string `json:"name"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+}
+
+type BorrowedBookByUserResponse struct {
+	ID          int `json:"id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 }

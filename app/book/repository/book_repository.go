@@ -15,8 +15,6 @@ type IBookRepository interface {
 	CreateBook(book *domain.Books) error
 	Update(book *domain.Books) error
 	Delete(book *domain.Books) error
-	Borrow(borrow *domain.BorrowHistories) error
-	ReturnBook(borrow *domain.BorrowHistories) error
 }
 
 type BookRepository struct {
@@ -90,34 +88,4 @@ func (r *BookRepository) Delete(book *domain.Books) error {
 
 	tx.Commit()
 	return err
-}
-
-func (r *BookRepository) Borrow(borrow *domain.BorrowHistories) error {
-	tx := r.db.Begin()
-
-	err := r.db.Table("borrowhistories").Create(map[string]interface{}{
-		"user_id":     borrow.UserId,
-		"book_id":     borrow.BookId,
-		"borrow_time": borrow.BorrowTime,
-	}).Error
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	tx.Commit()
-	return err
-}
-
-func (r *BookRepository) ReturnBook(borrow *domain.BorrowHistories) error {
-	tx := r.db.Begin()
-
-	err := r.db.Table("borrowhistories").Save(borrow).Error
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	tx.Commit()
-	return nil
 }

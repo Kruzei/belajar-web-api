@@ -6,12 +6,19 @@ import (
 	"belajar-api/domain"
 	help "belajar-api/helper"
 	"errors"
+	"fmt"
 	"net/http"
+	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 type IBorrowHistoryUsecase interface {
 	GetBorrowedBook() ([]domain.BorrowedBookResponse, any)
 	GetBorrowHistory() ([]domain.BorrowHistoryResponse, any)
+	GetUserBorrowedBook(c *gin.Context) ([]domain.BorrowedBookByUserResponse, any)
+	BorrowBook(bookId int, c *gin.Context) (domain.Books, any)
+	ReturnBook(bookId int, c *gin.Context) (domain.Books, any)
 }
 
 type BorrowHistoryUsecase struct {
@@ -24,38 +31,30 @@ func NewBorrowHistoryUsecase(repository repository.IBorrowHistory, bookRepositor
 }
 
 func (s *BorrowHistoryUsecase) GetBorrowedBook() ([]domain.BorrowedBookResponse, any) {
-	var books []domain.Books
-	err := s.bookRepository.GetBookByCondition(&books, "status = ?", "NOT AVAILABLE")
+	var borrowHistories []domain.BorrowHistories
+	err := s.borrowHistoryRepository.GetBorrowedBooks(&borrowHistories)
 	if err != nil {
 		return []domain.BorrowedBookResponse{}, help.ErrorObject{
-			Code:    http.StatusInternalServerError,
-			Message: "failed to get all borrowed book",
+			Code:    http.StatusNotFound,
+			Message: "book not found",
 			Err:     err,
 		}
 	}
 
-	var user []domain.Users
-	err2 := s.borrowHistoryRepository.GetBorrowedBook(&books, &user)
-	if err2 != nil {
-		return []domain.BorrowedBookResponse{}, help.ErrorObject{
-			Code:    http.StatusNotFound,
-			Message: "book not found",
-			Err:     errors.New(""),
-		}
-	}
+	fmt.Println(borrowHistories)
 
-	var booksResponse []domain.BorrowedBookResponse
-	for i, b := range books {
+	var bookResponses []domain.BorrowedBookResponse
+	for _, b := range borrowHistories {
 		bookResponse := domain.BorrowedBookResponse{
-			Name:        user[i].Name,
-			Title:       b.Title,
-			Description: b.Description,
+			Name:        b.User.Name,
+			Title:       b.Book.Title,
+			Description: b.Book.Description,
 		}
 
-		booksResponse = append(booksResponse, bookResponse)
+		bookResponses = append(bookResponses, bookResponse)
 	}
 
-	return booksResponse, nil
+	return bookResponses, nil
 }
 
 func (s *BorrowHistoryUsecase) GetBorrowHistory() ([]domain.BorrowHistoryResponse, any) {
@@ -64,25 +63,16 @@ func (s *BorrowHistoryUsecase) GetBorrowHistory() ([]domain.BorrowHistoryRespons
 	if err != nil {
 		return []domain.BorrowHistoryResponse{}, help.ErrorObject{
 			Code:    http.StatusInternalServerError,
-			Message: "error occured when find all book histories",
+			Message: "error occured when get all book histories",
 			Err:     err,
 		}
 	}
 
-	var books []domain.Books
-	err = s.borrowHistoryRepository.GetAllBookById(&books)
-	if err != nil {
-		return []domain.BorrowHistoryResponse{}, help.ErrorObject{
-			Code:    http.StatusInternalServerError,
-			Message: "error occured when find all book",
-			Err:     err,
-		}
-	}
 	var borrowHistoriesResponse []domain.BorrowHistoryResponse
 
-	for i, b := range borrowHistories {
+	for _, b := range borrowHistories {
 		borrowHistoryResponse := domain.BorrowHistoryResponse{
-			Title:      books[i].Title,
+			Title:      b.Book.Title,
 			BorrowTime: b.BorrowTime,
 			ReturnTime: b.ReturnTime,
 		}
@@ -90,4 +80,145 @@ func (s *BorrowHistoryUsecase) GetBorrowHistory() ([]domain.BorrowHistoryRespons
 	}
 
 	return borrowHistoriesResponse, nil
+}
+
+func (s *BorrowHistoryUsecase) GetUserBorrowedBook(c *gin.Context) ([]domain.BorrowedBookByUserResponse, any) {
+	user, err := help.GetLoginUser(c)
+	if err != nil {
+		return []domain.BorrowedBookByUserResponse{}, help.ErrorObject{
+			Code:    http.StatusNotFound,
+			Message: "user not found",
+			Err:     err,
+		}
+	}
+
+	userID := user.ID
+
+	var borrowedBooks []domain.BorrowHistories
+	err = s.borrowHistoryRepository.GetUserBorrowedBook(&borrowedBooks, userID)
+	if err != nil {
+		return []domain.BorrowedBookByUserResponse{}, help.ErrorObject{
+			Code:    http.StatusInternalServerError,
+			Message: "error occured when get user borrowed book",
+			Err:     err,
+		}
+	}
+
+	var borrowedBookResponses []domain.BorrowedBookByUserResponse
+	for _, b := range borrowedBooks {
+		borrowedBookResponse := domain.BorrowedBookByUserResponse{
+			ID:          b.Book.ID,
+			Title:       b.Book.Title,
+			Description: b.Book.Description,
+		}
+
+		borrowedBookResponses = append(borrowedBookResponses, borrowedBookResponse)
+	}
+
+	return borrowedBookResponses, nil
+}
+
+func (s *BorrowHistoryUsecase) BorrowBook(bookId int, c *gin.Context) (domain.Books, any) {
+	user, err := help.GetLoginUser(c)
+	if err != nil {
+		return domain.Books{}, help.ErrorObject{
+			Code:    http.StatusNotFound,
+			Message: "user not found",
+			Err:     err,
+		}
+	}
+
+	userId := user.ID
+	var book domain.Books
+	err = s.bookRepository.GetBookById(&book, bookId)
+	if err != nil {
+		return domain.Books{}, help.ErrorObject{
+			Code:    http.StatusNotFound,
+			Message: "book is not exist",
+			Err:     err,
+		}
+	}
+
+	if book.Status != "AVAILABLE" {
+		return domain.Books{}, help.ErrorObject{
+			Code:    http.StatusBadRequest,
+			Message: "book not AVAILABLE",
+			Err:     errors.New(""),
+		}
+	}
+
+	book.Status = "NOT AVAILABLE"
+	err = s.bookRepository.Update(&book)
+	if err != nil {
+		return domain.Books{}, help.ErrorObject{
+			Code:    http.StatusInternalServerError,
+			Message: "failed to borrow book",
+			Err:     err,
+		}
+	}
+
+	date := time.Now()
+
+	var borrowBook = domain.BorrowHistories{
+		UserId:     userId,
+		BookId:     book.ID,
+		BorrowTime: date,
+	}
+
+	err = s.borrowHistoryRepository.Borrow(&borrowBook)
+	if err != nil {
+		return domain.Books{}, help.ErrorObject{
+			Code:    http.StatusInternalServerError,
+			Message: "failed to borrow book",
+			Err:     err,
+		}
+	}
+
+	return book, err
+}
+
+func (s *BorrowHistoryUsecase) ReturnBook(bookId int, c *gin.Context) (domain.Books, any) {
+	var book domain.Books
+	err := s.bookRepository.GetBookById(&book, bookId)
+	if err != nil {
+		return domain.Books{}, help.ErrorObject{
+			Code:    http.StatusNotFound,
+			Message: "book is not exist",
+			Err:     err,
+		}
+	}
+
+	var borrowedBook domain.BorrowHistories
+	err = s.bookRepository.GetBorrowedBook(&borrowedBook, bookId)
+	if err != nil {
+		return domain.Books{}, help.ErrorObject{
+			Code:    http.StatusNotFound,
+			Message: "borrowed book not found",
+			Err:     err,
+		}
+	}
+
+	book.Status = "AVAILABLE"
+	err = s.bookRepository.Update(&book)
+	if err != nil {
+		return domain.Books{}, help.ErrorObject{
+			Code:    http.StatusInternalServerError,
+			Message: "failed to return book",
+			Err:     err,
+		}
+	}
+
+	date := time.Now()
+	borrowedBook.ReturnTime = date
+
+	err = s.borrowHistoryRepository.ReturnBook(&borrowedBook)
+	if err != nil {
+		return domain.Books{}, help.ErrorObject{
+			Code:    http.StatusInternalServerError,
+			Message: "failed to return book",
+			Err:     err,
+		}
+	}
+
+	return book, err
 }

@@ -22,7 +22,7 @@ func (h *BookHandler) GetBooks(c *gin.Context) {
 	books, errorObject := h.bookUsecase.GetAllBooks()
 	if errorObject != nil {
 		errorObject := errorObject.(help.ErrorObject)
-		help.FailedResponse(c, http.StatusBadRequest, "failed get all books", errorObject.Err)
+		help.FailedResponse(c, http.StatusBadRequest, errorObject.Message, errorObject.Err)
 		return
 	}
 
@@ -36,7 +36,7 @@ func (h *BookHandler) GetBook(c *gin.Context) {
 	b, errorObject := h.bookUsecase.GetBookById(id)
 	if errorObject != nil {
 		errorObject := errorObject.(help.ErrorObject)
-		help.FailedResponse(c, http.StatusBadRequest, "failed get book by id", errorObject.Err)
+		help.FailedResponse(c, http.StatusBadRequest, errorObject.Message, errorObject.Err)
 		return
 	}
 
@@ -47,7 +47,7 @@ func (h *BookHandler) GetAvailableBook(c *gin.Context){
 	books, errorObject := h.bookUsecase.GetAvailableBook()
 	if errorObject != nil {
 		errorObject := errorObject.(help.ErrorObject)
-		help.FailedResponse(c, http.StatusBadRequest, "failed get all books", errorObject.Err)
+		help.FailedResponse(c, http.StatusBadRequest, errorObject.Message, errorObject.Err)
 		return
 	}
 
@@ -67,7 +67,7 @@ func (h *BookHandler) CreateBook(c *gin.Context) {
 	book, errorObject := h.bookUsecase.CreateBook(bookRequest)
 	if errorObject != nil {
 		errorObject := errorObject.(help.ErrorObject)
-		help.FailedResponse(c, http.StatusBadRequest, "failed to create", errorObject.Err)
+		help.FailedResponse(c, http.StatusBadRequest, errorObject.Message, errorObject.Err)
 		return
 	}
 
@@ -89,7 +89,7 @@ func (h *BookHandler) UpdateBook(c *gin.Context) {
 
 	if errorObject != nil {
 		errorObject := errorObject.(help.ErrorObject)
-		help.FailedResponse(c, http.StatusBadRequest, "failed Update Book", errorObject.Err)
+		help.FailedResponse(c, http.StatusBadRequest, errorObject.Message, errorObject.Err)
 		return
 	}
 
@@ -104,38 +104,9 @@ func (h *BookHandler) DeleteBook(c *gin.Context) {
 
 	if errorObject != nil {
 		errorObject := errorObject.(help.ErrorObject)
-		help.FailedResponse(c, http.StatusBadRequest, "failed delete book", errorObject.Err)
+		help.FailedResponse(c, http.StatusBadRequest, errorObject.Message, errorObject.Err)
 		return
 	}
 
 	help.SuccessResponse(c, http.StatusOK, "succes delete book", b)
 }
-
-func (h *BookHandler) BorrowBook(c *gin.Context){
-	bookIdString := c.Param("bookid")
-	bookId, _ := strconv.Atoi(bookIdString)
-
-	borrowedBook , errorObject := h.bookUsecase.BorrowBook(bookId, c)
-	if errorObject != nil{
-		errorObject := errorObject.(help.ErrorObject)
-		help.FailedResponse(c, http.StatusBadRequest, "failed to borrow book", errorObject.Err)
-		return
-	}
-
-	help.SuccessResponse(c, http.StatusOK, "success borrow book", borrowedBook)
-}
-
-func (h *BookHandler) ReturnBook(c *gin.Context){
-	bookIdString := c.Param("bookid")
-	bookId, _ := strconv.Atoi(bookIdString)
-
-	returnBook, errorObject := h.bookUsecase.ReturnBook(bookId, c)
-	if errorObject != nil{
-		errorObject := errorObject.(help.ErrorObject)
-		help.FailedResponse(c, http.StatusBadRequest, "failed to return book", errorObject.Err)
-		return
-	}
-
-	help.SuccessResponse(c, http.StatusOK, "success return book", returnBook)
-}
-

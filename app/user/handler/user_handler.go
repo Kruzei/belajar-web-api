@@ -23,7 +23,7 @@ func (h *UserHandler) GetAllUsers(c *gin.Context) {
 	users, errorObject := h.userUsecase.GetAllUsers()
 	if errorObject != nil {
 		errorObject := errorObject.(help.ErrorObject)
-		help.FailedResponse(c, http.StatusBadRequest, "Failed get all users", errorObject.Err)
+		help.FailedResponse(c, http.StatusBadRequest, errorObject.Message, errorObject.Err)
 		return
 	}
 
@@ -36,7 +36,7 @@ func (h *UserHandler) GetUser(c *gin.Context) {
 	user, errorObject := h.userUsecase.GetUser(id)
 	if errorObject != nil {
 		errorObject := errorObject.(help.ErrorObject)
-		help.FailedResponse(c, http.StatusBadRequest, "Failed to get user", errorObject.Err)
+		help.FailedResponse(c, http.StatusBadRequest, errorObject.Message, errorObject.Err)
 		return
 	}
 
@@ -77,7 +77,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 	user, errorObject := h.userUsecase.UpdateUser(id, userRequest)
 	if errorObject != nil {
 		errorObject := errorObject.(help.ErrorObject)
-		help.FailedResponse(c, http.StatusBadRequest, "Failed to update user", errorObject.Err)
+		help.FailedResponse(c, http.StatusBadRequest, errorObject.Message, errorObject.Err)
 		return
 	}
 
@@ -91,7 +91,7 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 
 	if errorObject != nil {
 		errorObject := errorObject.(help.ErrorObject)
-		help.FailedResponse(c, http.StatusBadRequest, "Failed to delete user", errorObject.Err)
+		help.FailedResponse(c, http.StatusBadRequest, errorObject.Message, errorObject.Err)
 		return
 	}
 
@@ -110,7 +110,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 	user, apiResponse, errorObject := h.userUsecase.LoginUser(userRequest, userRequest.Email)
 	if errorObject != nil {
 		errorObject := errorObject.(help.ErrorObject)
-		help.FailedResponse(c, http.StatusBadRequest, "Failed to login", errorObject.Err)
+		help.FailedResponse(c, http.StatusBadRequest, errorObject.Message, errorObject.Err)
 		return
 	}
 
@@ -118,3 +118,21 @@ func (h *UserHandler) Login(c *gin.Context) {
 
 	help.SuccessResponse(c, http.StatusOK, "Welcome "+user.Name, apiResponse)
 }
+
+// func (h *UserHandler) GetUser(c *gin.Context) {
+// 	userIdString := c.Param("user_id")
+
+// 	userId, _ := strconv.Atoi(userIdString)
+
+// 	param := domain.UserParam{
+// 		ID: userId,
+// 	}
+
+// 	user, err := h.userUsecase.GetUser(param)
+// 	if err != nil {
+// 		help.FailedResponse(c, http.StatusInternalServerError, "not found", err)
+// 		return
+// 	}
+
+// 	help.SuccessResponse(c, http.StatusOK, "success", user)
+// }
