@@ -91,8 +91,8 @@ func (s *BorrowHistoryUsecase) GetUserBorrowedBook(c *gin.Context) ([]domain.Bor
 
 	userID := user.ID
 
-	var books []domain.BorrowHistories
-	err = s.borrowHistoryRepository.GetUserBorrowedBook(&books, userID)
+	var borrowedBooks []domain.BorrowHistories
+	err = s.borrowHistoryRepository.GetUserBorrowedBook(&borrowedBooks, userID)
 	if err != nil {
 		return []domain.BorrowedBookByUserResponse{}, help.ErrorObject{
 			Code:    http.StatusInternalServerError,
@@ -101,18 +101,18 @@ func (s *BorrowHistoryUsecase) GetUserBorrowedBook(c *gin.Context) ([]domain.Bor
 		}
 	}
 
-	var borrowedBooks []domain.BorrowedBookByUserResponse
-	for _, b := range books {
-		borrowedBook := domain.BorrowedBookByUserResponse{
+	var borrowedBookResponses []domain.BorrowedBookByUserResponse
+	for _, b := range borrowedBooks {
+		borrowedBookResponse := domain.BorrowedBookByUserResponse{
 			ID:          b.Book.ID,
 			Title:       b.Book.Title,
 			Description: b.Book.Description,
 		}
 
-		borrowedBooks = append(borrowedBooks, borrowedBook)
+		borrowedBookResponses = append(borrowedBookResponses, borrowedBookResponse)
 	}
 
-	return borrowedBooks, nil
+	return borrowedBookResponses, nil
 }
 
 func (s *BorrowHistoryUsecase) BorrowBook(bookId int, c *gin.Context) (domain.Books, any) {
