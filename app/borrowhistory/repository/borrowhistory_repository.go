@@ -10,6 +10,7 @@ type IBorrowHistory interface {
 	GetBorrowedHistories(borrowHistories *[]domain.BorrowHistories) error
 	GetBorrowHistory(borrowHistories *[]domain.BorrowHistories) error
 	GetBorrowedBooks(borrowHistory *[]domain.BorrowHistories) error
+	GetUserBorrowedBook(borrowedBooks *[]domain.BorrowHistories, userId int) error
 	Borrow(borrow *domain.BorrowHistories) error
 	ReturnBook(borrow *domain.BorrowHistories) error
 }
@@ -34,6 +35,11 @@ func (r *BorrowHistoryRepository) GetBorrowedBooks(borrowHistory *[]domain.Borro
 
 func (r *BorrowHistoryRepository) GetBorrowHistory(borrowHistories *[]domain.BorrowHistories) error {
 	err := r.db.Model(domain.BorrowHistories{}).Preload("Book").Find(&borrowHistories).Error
+	return err
+}
+
+func (r *BorrowHistoryRepository) GetUserBorrowedBook(borrowedBooks *[]domain.BorrowHistories, userId int) error {
+	err := r.db.Debug().Model(domain.BorrowHistories{}).Preload("Book").Where("return_time is NULL").Find(&borrowedBooks, "user_id = ?", userId).Error
 	return err
 }
 

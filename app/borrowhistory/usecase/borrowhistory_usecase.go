@@ -15,6 +15,7 @@ import (
 type IBorrowHistoryUsecase interface {
 	GetBorrowedBook() ([]domain.BorrowedBookResponse, any)
 	GetBorrowHistory() ([]domain.BorrowHistoryResponse, any)
+	GetUserBorrowedBook(c *gin.Context) ([]domain.BorrowedBookByUserResponse, any)
 	BorrowBook(bookId int, c *gin.Context) (domain.Books, any)
 	ReturnBook(bookId int, c *gin.Context) (domain.Books, any)
 }
@@ -39,7 +40,7 @@ func (s *BorrowHistoryUsecase) GetBorrowedBook() ([]domain.BorrowedBookResponse,
 		}
 	}
 
-	var booksResponse []domain.BorrowedBookResponse
+	var bookResponses []domain.BorrowedBookResponse
 	for _, b := range borrowHistories {
 		bookResponse := domain.BorrowedBookResponse{
 			Name:        b.User.Name,
@@ -47,10 +48,10 @@ func (s *BorrowHistoryUsecase) GetBorrowedBook() ([]domain.BorrowedBookResponse,
 			Description: b.Book.Title,
 		}
 
-		booksResponse = append(booksResponse, bookResponse)
+		bookResponses = append(bookResponses, bookResponse)
 	}
 
-	return booksResponse, nil
+	return bookResponses, nil
 }
 
 func (s *BorrowHistoryUsecase) GetBorrowHistory() ([]domain.BorrowHistoryResponse, any) {
@@ -78,19 +79,55 @@ func (s *BorrowHistoryUsecase) GetBorrowHistory() ([]domain.BorrowHistoryRespons
 	return borrowHistoriesResponse, nil
 }
 
-func (s *BorrowHistoryUsecase) BorrowBook(bookId int, c *gin.Context) (domain.Books, any) {
-	user, exists := c.Get("user")
-	if !exists {
-		return domain.Books{}, help.ErrorObject{
+func (s *BorrowHistoryUsecase) GetUserBorrowedBook(c *gin.Context) ([]domain.BorrowedBookByUserResponse, any) {
+	user, err := help.GetLoginUser(c)
+	if err != nil {
+		return []domain.BorrowedBookByUserResponse{}, help.ErrorObject{
 			Code:    http.StatusNotFound,
 			Message: "user not found",
-			Err:     errors.New(""),
+			Err:     err,
 		}
 	}
 
-	userId := user.(domain.Users).ID
+	userID := user.ID
+
+	var books []domain.BorrowHistories
+	err = s.borrowHistoryRepository.GetUserBorrowedBook(&books, userID)
+	if err != nil {
+		return []domain.BorrowedBookByUserResponse{}, help.ErrorObject{
+			Code:    http.StatusInternalServerError,
+			Message: "error occured when get user borrowed book",
+			Err:     err,
+		}
+	}
+
+	var borrowedBooks []domain.BorrowedBookByUserResponse
+	for _, b := range books {
+		borrowedBook := domain.BorrowedBookByUserResponse{
+			ID:          b.Book.ID,
+			Title:       b.Book.Title,
+			Description: b.Book.Description,
+		}
+
+		borrowedBooks = append(borrowedBooks, borrowedBook)
+	}
+
+	return borrowedBooks, nil
+}
+
+func (s *BorrowHistoryUsecase) BorrowBook(bookId int, c *gin.Context) (domain.Books, any) {
+	user, err := help.GetLoginUser(c)
+	if err != nil {
+		return domain.Books{}, help.ErrorObject{
+			Code:    http.StatusNotFound,
+			Message: "user not found",
+			Err:     err,
+		}
+	}
+
+	userId := user.ID
 	var book domain.Books
-	err := s.bookRepository.FindById(&book, bookId)
+	err = s.bookRepository.FindById(&book, bookId)
 	if err != nil {
 		return domain.Books{}, help.ErrorObject{
 			Code:    http.StatusNotFound,
@@ -152,9 +189,9 @@ func (s *BorrowHistoryUsecase) ReturnBook(bookId int, c *gin.Context) (domain.Bo
 	err = s.bookRepository.FindBorrowedBook(&borrowedBook, bookId)
 	if err != nil {
 		return domain.Books{}, help.ErrorObject{
-			Code: http.StatusNotFound,
+			Code:    http.StatusNotFound,
 			Message: "borrowed book not found",
-			Err: err,
+			Err:     err,
 		}
 	}
 

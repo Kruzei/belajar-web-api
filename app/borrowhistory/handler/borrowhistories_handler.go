@@ -39,8 +39,19 @@ func (h *BorrowHistoryHandler) GetBorrowHistory(c *gin.Context) {
 	help.SuccessResponse(c, http.StatusOK, "succes to get all book", borrowHistories)
 }
 
+func (h *BorrowHistoryHandler) GetUserBorrowedBook(c *gin.Context){
+	borrowHistories, errorObject := h.borrowHistoryUsecase.GetUserBorrowedBook(c)
+	if errorObject != nil {
+		errorObject := errorObject.(help.ErrorObject)
+		help.FailedResponse(c, http.StatusBadRequest, errorObject.Message, errorObject.Err)
+		return
+	}
+
+	help.SuccessResponse(c, http.StatusOK, "succes to get all book", borrowHistories)
+}
+
 func (h *BorrowHistoryHandler) BorrowBook(c *gin.Context) {
-	bookIdString := c.Param("bookid")
+	bookIdString := c.Param("book_id")
 	bookId, _ := strconv.Atoi(bookIdString)
 
 	borrowedBook, errorObject := h.borrowHistoryUsecase.BorrowBook(bookId, c)
@@ -54,7 +65,7 @@ func (h *BorrowHistoryHandler) BorrowBook(c *gin.Context) {
 }
 
 func (h *BorrowHistoryHandler) ReturnBook(c *gin.Context){
-	bookIdString := c.Param("bookid")
+	bookIdString := c.Param("borrow-histories-id")
 	bookId, _ := strconv.Atoi(bookIdString)
 
 	returnBook, errorObject := h.borrowHistoryUsecase.ReturnBook(bookId, c)
